@@ -25,52 +25,62 @@ class GeminiLiveClient:
         self._text_callback: Optional[Callable[[str], None]] = None
         self._receive_task: Optional[asyncio.Task] = None
         
-    async def connect(self, system_instruction: Optional[str] = None) -> bool:
-        """Establish connection to Gemini Live API.
+    async def connect(self, system_instruction: Optional[str] = None, max_retries: int = 3) -> bool:
+        """Establish connection to Gemini Live API with retry logic.
         
         Args:
             system_instruction: Optional system prompt for the session
+            max_retries: Maximum number of connection attempts
             
         Returns:
             True if connection successful, False otherwise
         """
-        try:
-            # Configure the live session
-            config = types.LiveConnectConfig(
-                response_modalities=[
-                    "AUDIO",  # We want audio responses
-                ],
-                speech_config=types.SpeechConfig(
-                    voice_config=types.VoiceConfig(
-                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                            voice_name="Charon"  # Calm, focused voice
+        from ..config import settings
+        
+        for attempt in range(max_retries):
+            try:
+                # Configure the live session
+                config = types.LiveConnectConfig(
+                    response_modalities=[
+                        "AUDIO",  # We want audio responses
+                    ],
+                    speech_config=types.SpeechConfig(
+                        voice_config=types.VoiceConfig(
+                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                voice_name="Charon"  # Calm, focused voice
+                            )
                         )
-                    )
-                ),
-            )
-            
-            # Connect to Live API
-            self.session = await self.client.live.connect(
-                model=self.MODEL,
-                config=config
-            )
-            
-            self.is_connected = True
-            logger.info("Connected to Gemini Live API")
-            
-            # Start receiving responses in background
-            self._receive_task = asyncio.create_task(self._receive_loop())
-            
-            # Send system instruction if provided
-            if system_instruction:
-                await self.send_text(system_instruction)
+                    ),
+                )
                 
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to connect to Gemini Live API: {e}")
-            self.is_connected = False
-            return False
+                # Connect to Live API
+                self.session = await self.client.live.connect(
+                    model=self.MODEL,
+                    config=config
+                )
+                
+                self.is_connected = True
+                logger.info("Connected to Gemini Live API")
+                
+                # Start receiving responses in background
+                self._receive_task = asyncio.create_task(self._receive_loop())
+                
+                # Send system instruction if provided
+                if system_instruction:
+                    await self.send_text(system_instruction)
+                    
+                return True
+                
+            except Exception as e:
+                logger.warning(f"Connection attempt {attempt + 1}/{max_retries} failed: {e}")
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(settings.GEMINI_RETRY_DELAY * (attempt + 1))
+                else:
+                    logger.error(f"Failed to connect to Gemini Live API after {max_retries} attempts: {e}")
+                    self.is_connected = False
+                    return False
+        
+        return False
     
     async def _receive_loop(self):
         """Background task to receive responses from Gemini."""

@@ -316,11 +316,24 @@ Current session context will be provided in your interactions."""
                 image_data = data.get("image_data", "")
                 current_goal = data.get("current_goal", "")
                 
+                # Validate image data size (prevent DoS)
                 if image_data:
-                    # Process asynchronously
-                    asyncio.create_task(
-                        process_screen_analysis(image_data, current_goal)
-                    )
+                    try:
+                        # Rough size check: base64 is ~4/3 of binary size
+                        estimated_size = len(image_data) * 0.75
+                        if estimated_size > settings.MAX_SCREEN_IMAGE_SIZE:
+                            logger.warning(f"Screen image too large: {estimated_size / 1024 / 1024:.1f}MB")
+                            await manager.send_message(connection_id, {
+                                "type": "error",
+                                "message": "Screen image too large. Please reduce quality."
+                            })
+                        else:
+                            # Process asynchronously
+                            asyncio.create_task(
+                                process_screen_analysis(image_data, current_goal)
+                            )
+                    except Exception as e:
+                        logger.error(f"Error validating screen data: {e}")
             
             elif msg_type == "start_session":
                 # Start a new focus session

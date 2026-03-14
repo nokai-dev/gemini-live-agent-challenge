@@ -3,14 +3,38 @@ from fastapi import FastAPI, WebSocket
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import sys
+import json
 
 from .config import settings
 from .api.websocket import handle_focus_session
 
 # Configure logging
+class JSONFormatter(logging.Formatter):
+    """JSON formatter for structured logging."""
+    def format(self, record):
+        log_data = {
+            "timestamp": self.formatTime(record),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if hasattr(record, "extra"):
+            log_data.update(record.extra)
+        return json.dumps(log_data)
+
+# Setup logging
+log_handler = logging.StreamHandler(sys.stdout)
+if settings.LOG_FORMAT == "json":
+    log_handler.setFormatter(JSONFormatter())
+else:
+    log_handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    ))
+
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO),
+    handlers=[log_handler]
 )
 logger = logging.getLogger(__name__)
 
@@ -34,10 +58,29 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
+    import time
     return {
         "status": "healthy",
         "service": "FocusCompanion",
-        "version": "0.1.0"
+        "version": "0.1.0",
+        "timestamp": time.time(),
+        "environment": settings.ENVIRONMENT if hasattr(settings, 'ENVIRONMENT') else 'unknown',
+        "features": {
+            "gemini_api": bool(settings.GEMINI_API_KEY),
+            "screen_analysis": True,
+            "voice_interaction": True
+        }
+    }
+
+@app.get("/ready")
+async def readiness_check():
+    """Readiness check for Kubernetes/Cloud Run."""
+    return {
+        "ready": True,
+        "checks": {
+            "config_loaded": True,
+            "gemini_configured": bool(settings.GEMINI_API_KEY)
+        }
     }
 
 # WebSocket endpoint for focus sessions
