@@ -1,0 +1,72 @@
+# Cloud Run service configuration for FocusCompanion
+# This file defines the service deployment settings
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: focuscompanion
+  annotations:
+    # Allow unauthenticated access for demo
+    run.googleapis.com/ingress: all
+    # Use second generation execution environment for better WebSocket support
+    run.googleapis.com/execution-environment: gen2
+    # Minimum instances to keep warm (reduce cold start latency)
+    autoscaling.knative.dev/minScale: "0"
+    # Maximum instances
+    autoscaling.knative.dev/maxScale: "10"
+spec:
+  template:
+    metadata:
+      annotations:
+        # CPU always allocated (required for WebSockets)
+        run.googleapis.com/cpu-throttle: "false"
+        # Memory allocation
+        run.googleapis.com/memory: "2Gi"
+        # CPU allocation
+        run.googleapis.com/cpu: "2"
+        # Maximum concurrent requests per instance
+        run.googleapis.com/concurrency: "1000"
+        # Request timeout (1 hour for long focus sessions)
+        run.googleapis.com/timeout: "3600s"
+    spec:
+      containerConcurrency: 1000
+      timeoutSeconds: 3600
+      serviceAccountName: focuscompanion-sa@PROJECT_ID.iam.gserviceaccount.com
+      containers:
+      - image: gcr.io/PROJECT_ID/focuscompanion:latest
+        ports:
+        - containerPort: 8080
+          name: http1
+        env:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gemini-api-key
+              key: latest
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "PROJECT_ID"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: PORT
+          value: "8080"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 6
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          failureThreshold: 3
