@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  hackathon-swarm:
+    build: .
+    image: hackathon-agent-swarm:latest
+    container_name: hackathon-swarm
+    environment:
+      - DEVPOST_URL=${DEVPOST_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    volumes:
+      - ./output:/app/output
+      - ./.env:/app/.env:ro
+    command: ["/entrypoint.sh"]
