@@ -62,18 +62,24 @@ Once research completes, spawn THREE critics in parallel:
 
 ```
 Spawn simultaneously:
-1. originality-critic → "Does this exist? Is it creative?"
-2. judging-criteria-critic → "Does it fit judging criteria?"
-3. market-viability-critic → "Is there a real market?"
+1. originality-critic → "Will judges REMEMBER this?"
+2. judging-criteria-critic → "Does it MAXIMIZE rubric score?"
+3. market-viability-critic → "Will judges BUY future potential?"
 ```
 
 **They debate:** Each critic reviews all ideas, scores them, provides verdict.
 
 **You synthesize:**
 - Combine all three critiques
-- Weight: Originality (40%) + Judging Fit (35%) + Market (25%)
+- Weight: Originality (30%) + Judging Fit (40%) + Market (30%)
 - Rank ideas
 - Select **TOP 5**
+
+**IF all scores < 6/10:**
+- Spawn `idea-rescue` agent
+- Generate 5-7 new angles with different strategies
+- Present rescue ideas to user
+- Mark as "CHALLENGING - Low win probability" but continue
 
 **Present to user:**
 ```
@@ -81,12 +87,11 @@ Spawn simultaneously:
 
 ### 1. [Idea Name] - Score: X.X/10
 **Originality:** X/10 - [Verdict]
-**Judging Fit:** X/10 - [Verdict]  
+**Judging Fit:** X/10 - [Verdict]
 **Market:** X/10 - [Verdict]
 **Why it wins:** [Synthesis]
 
-### 2. [Idea Name]...
-[...]
+### 2-5. [...]
 
 Reply with number (1-5) to select, or say "generate more"
 ```
@@ -126,7 +131,48 @@ Check: originality, functionality, requirements
 Spawn: `demo-script-writer`
 Create 3-5 minute SaaS presentation script
 
-### Channel 7: Deploy
+### Channel 7: Demo Rehearsal (NEW)
+
+Spawn: `demo-rehearsal`
+- Cut to strict 90 seconds
+- Remove dead time
+- Optimize pacing
+- Create backup plans
+
+### Channel 8: Submission Optimization (NEW)
+
+Spawn: `submission-optimizer`
+- Optimize Devpost page for judges skimming
+- Title/tagline refinement
+- GIF placement strategy
+- Structure for 30-second attention span
+
+### Channel 9: Sponsor Validation (NEW)
+
+Spawn: `sponsor-validator`
+- Check sponsor tech integration depth
+- Validate showcase potential
+- Ensure creative (not obvious) usage
+- Maximize sponsor track win probability
+
+### Channel 10: Scope Guardian (NEW - runs during build)
+
+Continuously during Channel 4:
+Spawn: `scope-guardian`
+- Review every feature request
+- Auto-reject demo-irrelevant additions
+- Enforce hardcode vs build decisions
+- Time budget enforcement
+
+### Channel 11: Final Polish (NEW)
+
+Spawn: `final-polish` (2 hours before deadline)
+- Critical items checklist
+- Emergency triage if broken
+- Ruthless cuts if needed
+- Ensure submission completeness
+
+### Channel 12: Deploy
 
 - Build OCI image
 - Push to GHCR
