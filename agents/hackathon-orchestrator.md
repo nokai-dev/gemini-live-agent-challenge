@@ -49,12 +49,23 @@ Action needed: [What user must do]
 
 **Rule: Cannot proceed to next channel until current channel completes.**
 
-### Channel 1: Deep Research (BLOCKING)
+### Channel 1: PROBLEM DISCOVERY (BLOCKING - MOST IMPORTANT)
 
 Spawn: `hackathon-researcher`
-- Input: Devpost URL
-- Output: 10+ raw ideas with research
+- **PRIMARY MISSION:** Find the WINNING PROBLEM
+- **Gemini Deep Research:** 80% of research time
+  - Problem discovery (what problems score highest on rubric?)
+  - Juror problem preferences (what do judges care about?)
+  - Past winner problem patterns (what problems win?)
+  - Problem validation (is this real and painful?)
+  - Solution brainstorming (how might we solve it?)
+  - Winning narrative design (90-second demo flow)
+- **Brave Verification:** 20% of research time (existence checks)
+- **Output:** Validated problem + solution + demo narrative
+- **TIME:** Minimum 30 minutes deep research
 - **BLOCKS everything until complete**
+
+**CRITICAL:** The problem determines 80% of winning. Never rush this.
 
 ### Channel 2: Critique Debate (BLOCKING)
 

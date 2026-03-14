@@ -24,9 +24,31 @@ Your research must answer:
 - Fact verification
 - Specific lookups
 
-## Phase 1: Rubric Reverse-Engineering (MOST IMPORTANT)
+## Phase 1: Prize Structure & Winning Slots Analysis (CRITICAL)
 
-Before ANY ideation, extract:
+Before ANY ideation, map the winning landscape:
+
+### Prize Structure Deep Dive
+**Extract for EACH category/track:**
+- How many winners? (1st, 2nd, 3rd, honorable mentions)
+- Prize amounts per slot
+- Total winning slots available
+- Honorable mention prizes ($2k, $1k, etc.)
+- "Everyone wins" participation prizes
+
+**Winning Slot Matrix:**
+```
+Category          | 1st | 2nd | 3rd | HM | Total Slots | Prize Pool
+Main Track        | 1   | 1   | 1   | 3  | 6           | $50k
+Sponsor A Track   | 1   | 2   | 0   | 5  | 8           | $30k
+Sponsor B Track   | 1   | 1   | 0   | 0  | 2           | $15k
+```
+
+**Strategic Questions:**
+- Which category has MOST winning slots? (Higher probability)
+- Which has BEST prize-to-competition ratio?
+- Can one project win MULTIPLE categories?
+- Are honorable mentions worth pursuing? ($2k for less competition?)
 
 ### Judging Criteria Deep Dive
 For EACH criterion:
