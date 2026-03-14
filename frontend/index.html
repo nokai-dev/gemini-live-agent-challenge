@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusCompanion - AI Focus Coach</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔵 FocusCompanion</h1>
+            <p class="subtitle">Your AI Focus Coach</p>
+        </header>
+
+        <main>
+            <!-- Connection Status -->
+            <div id="connection-status" class="status-badge disconnected">
+                <span class="status-dot"></span>
+                <span class="status-text">Disconnected</span>
+            </div>
+
+            <!-- Session Setup -->
+            <div id="setup-panel" class="panel">
+                <h2>Start a Focus Session</h2>
+                <div class="form-group">
+                    <label for="session-goal">What are you working on?</label>
+                    <input type="text" id="session-goal" placeholder="e.g., Writing a report, coding, studying...">
+                </div>
+                <div class="form-group">
+                    <label for="session-duration">Duration (minutes)</label>
+                    <select id="session-duration">
+                        <option value="15">15 minutes</option>
+                        <option value="25" selected>25 minutes (Pomodoro)</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60">60 minutes</option>
+                    </select>
+                </div>
+                <button id="connect-btn" class="btn btn-primary">
+                    🎤 Connect & Start
+                </button>
+            </div>
+
+            <!-- Active Session -->
+            <div id="session-panel" class="panel hidden">
+                <div class="session-info">
+                    <h3 id="session-goal-display"></h3>
+                    <div class="timer" id="timer">25:00</div>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="pause-btn" class="btn btn-secondary">⏸️ Pause</button>
+                    <button id="resume-btn" class="btn btn-secondary hidden">▶️ Resume</button>
+                    <button id="end-btn" class="btn btn-danger">⏹️ End Session</button>
+                </div>
+
+                <!-- Audio Visualization -->
+                <div class="audio-viz">
+                    <canvas id="audio-canvas" width="300" height="100"></canvas>
+                    <div id="audio-status">Click microphone to speak</div>
+                </div>
+
+                <!-- Transcript -->
+                <div class="transcript-container">
+                    <div id="transcript"></div>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="instructions">
+                <h3>Voice Commands</h3>
+                <ul>
+                    <li><strong>"Focus mode"</strong> - Start a session</li>
+                    <li><strong>"Pause"</strong> - Pause the session</li>
+                    <li><strong>"Resume"</strong> - Resume the session</li>
+                    <li><strong>"Done"</strong> - End the session</li>
+                </ul>
+                <p class="hint">You can interrupt FocusCompanion at any time by speaking!</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with ❤️ using Gemini Live API</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/audio.js"></script>
+    <script src="/static/js/websocket.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
