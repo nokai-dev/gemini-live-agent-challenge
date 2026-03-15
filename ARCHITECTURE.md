@@ -15,7 +15,7 @@
 │                        ABSTRACT COORDINATOR (Main Agent)                        │
 │  ┌─────────────────────────────────────────────────────────────────────────┐       │
 │  │  • Maintains SOUL.md, TOOLS.md, MEMORY.md, ARCHITECTURE.md          │       │
-│  │  • Knows general hackathon principles                                 │       │
+│  │  • Knows empirically validated hackathon winning principles       │       │
 │  │  • Spawns orchestrators per hackathon                                 │       │
 │  │  • Runs cron jobs (audit + improvement)                               │       │
 │  └─────────────────────────────────────────────────────────────────────────┘       │
@@ -26,120 +26,108 @@
 │                      HACKATHON ORCHESTRATOR (Per-Instance)                      │
 │                                                                                 │
 │  ╔═══════════════════════════════════════════════════════════════════════════╗  │
-│  ║                    PHASE 1: RESEARCH & DISCOVERY                          ║  │
+│  ║                    PHASE 1: RUBRIC ANALYSIS                                ║  │
 │  ╠═══════════════════════════════════════════════════════════════════════════╣  │
 │  ║                                                                           ║  │
-│  ║   🔴 CRITICAL: MUST SHOW USER THE GEMINI DEEP RESEARCH PROMPT            ║  │
+│  ║   🔴 CRITICAL: VALIDATE RUBRIC BEFORE ANY RESEARCH                        ║  │
+│  ║                                                                           ║  │
+│  ║   Read: Rules, Prizes, Sponsor Tracks, Judging Criteria                 ║  │
+│  ║   Identify: What does THIS specific hackathon reward?                     ║  │
+│  ║   Adjust: Scoring weights based on event type                            ║  │
+│  ║                                                                           ║  │
+│  ║   Different hackathons reward different things:                          ║  │
+│  ║   • Google Cloud: Enterprise utility, sponsor tech showcase              ║  │
+│  ║   • DevPost General: Demo wow, emotional resonance                       ║  │
+│  ║   • Creative Storytellers: Multimodal innovation, narrative             ║  │
+│  ║   • Live Agents: Real-time interaction, barge-in, low-latency            ║  │
+│  ║                                                                           ║  │
+│  ║   Output: Validated rubric weights for this specific event               ║  │
+│  ╚═══════════════════════════════════════════════════════════════════════════╝  │
+│                                          │
+                                          ▼
+│  ╔═══════════════════════════════════════════════════════════════════════════╗  │
+│  ║                    PHASE 2: GEMINI DEEP RESEARCH (PARALLEL)                ║  │
+│  ╠═══════════════════════════════════════════════════════════════════════════╣  │
+│  ║                                                                           ║  │
+│  ║   🔴 CRITICAL: MUST SHOW USER THE RESEARCH PROMPTS FIRST                  ║  │
 │  ║                                                                           ║  │
 │  ║   BEFORE any research execution:                                          ║  │
-│  ║   1. Construct Gemini Deep Research prompt                               ║  │
-│  ║   2. SHOW prompt to user for approval/modification                        ║  │
-│  ║   3. WAIT for user "approved" or "modify: [changes]"                     ║  │
+│  ║   1. Construct TWO Gemini Deep Research prompts                          ║  │
+│  ║   2. SHOW prompts to user for approval                                    ║  │
+│  ║   3. WAIT for "approved" or "modify: [changes]"                          ║  │
 │  ║   4. ONLY then execute deep research                                     ║  │
 │  ║                                                                           ║  │
 │  ║   ┌─────────────────────────────────────────────────────────────────┐    ║  │
-│  ║   │  PROMPT TEMPLATE (Show to user):                                 │    ║  │
-│  ║   │  ─────────────────────────────────────────────────────────────   │    ║  │
-│  ║   │  "Conduct deep research on [HACKATHON NAME] hackathon:          │    ║  │
-│  ║   │                                                                   │    ║  │
-│  ║   │  1. JUROR ANALYSIS: Who are the judges? What are their           │    ║  │
-│  ║   │     backgrounds? What do they care about? Past projects?        │    ║  │
-│  ║   │                                                                   │    ║  │
-│  ║   │  2. PAST WINNERS: What won similar hackathons? Why?             │    ║  │
-│  ║   │     Patterns in winning projects?                               │    ║  │
-│  ║   │                                                                   │    ║  │
-│  ║   │  3. BOUNTY ALIGNMENT: Which prizes ($X Grand Prize, etc.)        │    ║  │
-│  ║   │     align with which problem types?                             │    ║  │
-│  ║   │                                                                   │    ║  │
-│  ║   │  4. PROBLEM VALIDATION: What are REAL, PAINFUL problems         │    ║  │
-│  ║   │     that fit the hackathon theme? Market size? Existing         │    ║  │
-│  ║   │     solutions? Why are they insufficient?                       │    ║  │
-│  ║   │                                                                   │    ║  │
-│  ║   │  5. TECHNICAL CONSTRAINTS: What stack is required?               │    ║  │
-│  ║   │     What are the technical differentiators?                     │    ║  │
-│  ║   │                                                                   │    ║  │
-│  ║   │  6. JUDGING CRITERIA DEEP DIVE: What scores highest on           │    ║  │
-│  ║   │     Innovation (40%)? Technical (30%)? Demo (30%)?            │    ║  │
-│  ║   │                                                                   │    ║  │
-│  ║   │  Return structured analysis with 10+ validated problem-        │    ║  │
-│  ║   │  solution pairs that could win this specific hackathon."      │    ║  │
-│  ║   │  ─────────────────────────────────────────────────────────────   │    ║  │
+│  ║   │  RESEARCH A: PAST WINNERS ANALYSIS                               │    ║  │
+│  ║   │  • Past winners of THIS specific hackathon                       │    ║  │
+│  ║   │  • What they built and why they won                              │    ║  │
+│  ║   │  • Demo patterns that scored well                                │    ║  │
+│  ║   │  • Technical differentiators                                     │    ║  │
+│  ║   │  • What separates winners from runners-up                        │    ║  │
 │  ║   └─────────────────────────────────────────────────────────────────┘    ║  │
-│  ║                              │                                           ║  │
-│  ║                              ▼                                           ║  │
+│  ║                                                                           ║  │
 │  ║   ┌─────────────────────────────────────────────────────────────────┐    ║  │
-│  ║   │  USER MUST APPROVE:                                              │    ║  │
-│  ║   │  • "Approved" → Execute deep research                            │    ║  │
-│  ║   │  • "Modify: [changes]" → Revise prompt, show again               │    ║  │
-│  ║   │  • "Add: [additional research areas]" → Update prompt            │    ║  │
+│  ║   │  RESEARCH B: PROBLEM SPACE ANALYSIS                              │    ║  │
+│  ║   │  • What problem is the hackathon trying to solve?              │    ║  │
+│  ║   │  • Who has this problem and why is it painful?                   │    ║  │
+│  ║   │  • Existing solutions and their gaps                             │    ║  │
+│  ║   │  • What would a winning solution look like?                      │    ║  │
+│  ║   │  • Deep understanding of the issue at hand                       │    ║  │
 │  ║   └─────────────────────────────────────────────────────────────────┘    ║  │
-│  ║                              │                                           ║  │
-│  ║                              ▼                                           ║  │
-│  ║   ┌─────────────────────┐         ┌─────────────────────┐               ║  │
-│  ║   │ hackathon-researcher│         │ disruptive-thinker  │               ║  │
-│  ║   │ (Deep Research)     │         │ (Radical Alternatives)              ║  │
-│  ║   │ • Juror backgrounds │         │ • Challenge assumptions               ║  │
-│  ║   │ • Bounty alignment  │         │ • "Opposite" thinking                 ║  │
-│  ║   │ • Past winners      │         │ • Cross-industry patterns             ║  │
-│  ║   │ • Problem validation│         │ • 3-5 radical ideas                   ║  │
-│  ║   │ • 10+ ideas         │         │                                       ║  │
-│  ║   └──────────┬──────────┘         └──────────┬──────────┘               ║  │
-│  ║              │                               │                           ║  │
-│  ║              └───────────────┬───────────────┘                           ║  │
-│  ║                              ▼                                           ║  │
-│  ║                    Combined Idea Pool (10+ ideas)                        ║  │
-│  ║                    TIME: 30+ min (MOST IMPORTANT)                         ║  │
+│  ║                                                                           ║  │
+│  ║   Output: Deep research reports for both A and B                        ║  │
+│  ║   TIME: 30+ min per research (MOST IMPORTANT)                          ║  │
 │  ╚═══════════════════════════════════════════════════════════════════════════╝  │
 │                                          │
                                           ▼
 │  ╔═══════════════════════════════════════════════════════════════════════════╗  │
-│  ║                    PHASE 2: MANDATORY CRITIQUE                              ║  │
+│  ║                    PHASE 3: DISRUPTIVE THINKER                             ║  │
 │  ╠═══════════════════════════════════════════════════════════════════════════╣  │
 │  ║                                                                           ║  │
-│  ║   ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐   ║  │
-│  ║   │  Originality │ │   Judging    │ │    Market    │ │  Disruptive  │   ║  │
-│  ║   │    Critic    │ │   Criteria   │ │  Viability   │ │    Critic    │   ║  │
-│  ║   │              │ │    Critic    │ │    Critic    │ │              │   ║  │
-│  ║   │ "Will judges │ │ "Maximize    │ │ "Will judges │ │ "What are we │   ║  │
-│  ║   │  remember?"  │ │   score?"    │ │  buy this?"  │ │  missing?"   │   ║  │
-│  ║   └──────┬───────┘ └──────┬───────┘ └──────┬───────┘ └──────┬───────┘   ║  │
-│  ║          │                │                │                │           ║  │
-│  ║          └────────────────┴────────────────┴────────────────┘           ║  │
-│  ║                              │                                           ║  │
-│  ║                              ▼                                           ║  │
-│  ║                    All Ideas Scored 0-10                                 ║  │
+│  ║   Spawn: disruptive-thinker (PARALLEL)                                   ║  │
+│  ║   • Challenge ALL assumptions                                            ║  │
+│  ║   • "What if we did the opposite?"                                        ║  │
+│  ║   • Cross-industry pattern breaking                                        ║  │
+│  ║   • Output: 3-5 radical alternative approaches                           ║  │
 │  ╚═══════════════════════════════════════════════════════════════════════════╝  │
 │                                          │
                                           ▼
 │  ╔═══════════════════════════════════════════════════════════════════════════╗  │
-│  ║                    PHASE 3: RESCUE & RE-CRITIQUE (if needed)              ║  │
+│  ║                    PHASE 4: IDEA SYNTHESIS                                 ║  │
 │  ╠═══════════════════════════════════════════════════════════════════════════╣  │
 │  ║                                                                           ║  │
-│  ║   IF any idea scores < 6/10:                                              ║  │
-│  ║   ┌─────────────────────────────────────────────────────────────────┐    ║  │
-│  ║   │                    idea-rescue agent                             │    ║  │
-│  ║   │  • Generate 5-7 new ideas                                        │    ║  │
-│  ║   │  • ⚠️ MUST go through ALL 4 critics again                        │    ║  │
-│  ║   │  • No exemptions, no shortcuts                                   │    ║  │
-│  ║   └─────────────────────────────────────────────────────────────────┘    ║  │
-│  ║                                                                           ║  │
-│  ║   Output: Top 5 problem-solutions with scores                             ║  │
+│  ║   Synthesize: Research A + Research B + Disruptive                        ║  │
+│  ║   Generate: 10+ validated problem-solution pairs                         ║  │
+│  ║   Focus: Empathy engines, workflow eliminators, magic moments            ║  │
+│  ║   Output: Ranked ideas with winning rationale                              ║  │
 │  ╚═══════════════════════════════════════════════════════════════════════════╝  │
 │                                          │
                                           ▼
 │  ╔═══════════════════════════════════════════════════════════════════════════╗  │
-│  ║                    PHASE 4: USER SELECTION (🔴 HARD BLOCK)                  ║  │
+│  ║                    PHASE 5: DEMO SCRIPT VALIDATION                         ║  │
 │  ╠═══════════════════════════════════════════════════════════════════════════╣  │
 │  ║                                                                           ║  │
-│  ║   ┌─────────────────────────────────────────────────────────────────┐    ║  │
-│  ║   │  Present to User:                                               │    ║  │
-│  ║   │  • Top 5 ideas with scores                                       │    ║  │
-│  ║   │  • Problem statement                                             │    ║  │
-│  ║   │  • Proposed solution                                             │    ║  │
-│  ║   │  • Demo flow outline                                             │    ║  │
-│  ║   │  • All 4 critic scores                                           │    ║  │
-│  ║   │  • Winning rationale                                             │    ║  │
-│  ║   └─────────────────────────────────────────────────────────────────┘    ║  │
+│  ║   For each top idea: Write 90-second demo script                          ║  │
+│  ║                                                                           ║  │
+│  ║   Test: Can we show the "magic moment" visually?                          ║  │
+│  ║   Test: Is the empathy hook clear in 10 seconds?                        ║  │
+│  ║   Test: Does it make sponsor tech look powerful?                        ║  │
+│  ║   Test: Can we build this in 24-48 hours?                                 ║  │
+│  ║                                                                           ║  │
+│  ║   Output: Top 5 ideas with validated demo scripts                          ║  │
+│  ╚═══════════════════════════════════════════════════════════════════════════╝  │
+│                                          │
+                                          ▼
+│  ╔═══════════════════════════════════════════════════════════════════════════╗  │
+│  ║                    PHASE 6: USER SELECTION (🔴 HARD BLOCK)                 ║  │
+│  ╠═══════════════════════════════════════════════════════════════════════════╣  │
+│  ║                                                                           ║  │
+│  ║   Present to User:                                                         ║  │
+│  ║   • Problem statement (severe human constraint)                            ║  │
+│  ║   • 90-second demo flow outline                                           ║  │
+│  ║   • Empathy hook (why judges will care)                                   ║  │
+│  ║   • Why it wins THIS hackathon                                           ║  │
+│  ║   • Sponsor tech showcase angle                                          ║  │
 │  ║                                                                           ║  │
 │  ║   ⚠️  WAIT FOR EXPLICIT USER APPROVAL                                     ║  │
 │  ║   ⚠️  NO CODE UNTIL USER SAYS "BUILD THIS ONE"                            ║  │
@@ -152,7 +140,7 @@
 │                                          │
                                           ▼
 │  ╔═══════════════════════════════════════════════════════════════════════════╗  │
-│  ║                    PHASE 5: BUILD (Only After Approval)                   ║  │
+│  ║                    PHASE 7: BUILD (Only After Approval)                    ║  │
 │  ╠═══════════════════════════════════════════════════════════════════════════╣  │
 │  ║                                                                           ║  │
 │  ║   ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐   ║  │
@@ -161,19 +149,23 @@
 │  ║   └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘   ║  │
 │  ║                                                                           ║  │
 │  ║   + scope-guardian (continuous feature creep protection)                  ║  │
+│  ║                                                                           ║  │
+│  ║   RULES:                                                                   ║  │
+│  ║   • Focus on demo-visible parts first                                     ║  │
+│  ║   • Hardcoded/mock data acceptable for demo                              ║  │
+│  ║   • Working > Impressive-but-broken                                       ║  │
+│  ║   • 90-second demo is the spec                                            ║  │
 │  ╚═══════════════════════════════════════════════════════════════════════════╝  │
 │                                          │
                                           ▼
 │  ╔═══════════════════════════════════════════════════════════════════════════╗  │
-│  ║                    PHASE 6-10: AUDIT → DEMO → DEPLOY                      ║  │
+│  ║                    PHASE 8-11: DEMO → SUBMISSION → DEPLOY                  ║  │
 │  ╠═══════════════════════════════════════════════════════════════════════════╣  │
 │  ║                                                                           ║  │
-│  ║   Channel 6:  audit-agent.py         → Quality checks                     ║  │
-│  ║   Channel 7:  demo-script-writer     → 90s demo script                    ║  │
-│  ║   Channel 8:  demo-rehearsal         → Timing & polish                   ║  │
-│  ║   Channel 9:  submission-optimizer → Devpost optimization               ║  │
-│  ║   Channel 10: sponsor-validator      → Creative sponsor usage             ║  │
-│  ║   Channel 11: final-polish           → 2h before deadline                 ║  │
+│  ║   Channel 8:  demo-video-producer    → Cinematic 90s trailer             ║  │
+│  ║   Channel 9:  submission-optimizer     → Devpost page as landing page       ║  │
+│  ║   Channel 10: final-polish           → 2h before deadline                 ║  │
+│  ║   Channel 11: audit-agent            → Rubric alignment check             ║  │
 │  ║   Channel 12: deploy                 → OCI image → GHCR → VPS             ║  │
 │  ║                                                                           ║  │
 │  ╚═══════════════════════════════════════════════════════════════════════════╝  │
@@ -181,83 +173,108 @@
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
+## The Three Winning Archetypes (From 20+ Actual Winners)
+
+### Archetype 1: The Empathy & Accessibility Engine ⭐⭐⭐
+**Examples:** VITE VERE (cognitive disability), Gaze Link (ALS), ViddyScribe (blind)
+
+**Characteristics:**
+- Addresses severe human constraints (disability, crisis, severe pain)
+- Hyper-specific niche (not broad platforms)
+- Social impact + technical execution = unbeatable
+- Market size IGNORED by judges
+
+**Why They Win:** "Juries are human; moved by technology that alleviates suffering"
+
+### Archetype 2: The Frictionless Workflow Eliminator
+**Examples:** tl;dd (dashboard fatigue), OpsPilot (DevOps on-call), SalesShortcut
+
+**Characteristics:**
+- Eliminates one recognizable daily annoyance
+- Corporate/enterprise context but specific problem
+- Instant utility, clear before/after
+- One feature, not platform
+
+**Why They Win:** "Instantly recognizable corporate annoyance + elegant solution"
+
+### Archetype 3: The Illusion of Magic
+**Examples:** Jayu (autonomous cursor), Outdraw AI (AI as game opponent)
+
+**Characteristics:**
+- Novel interaction paradigm feels futuristic
+- Contrarian use of sponsor technology
+- High "demo wow" factor
+- Relatively straightforward API calls
+
+**Why They Win:** "Arrests attention of fatigued judges with spectacle"
+
+## What Actually Wins (Empirically Validated)
+
+### The Real Scoring Function
+
+```
+Score = Rubric Fit (40%) + Demo Confidence (30%) + Story/Impact (20%) + Future Potential (10%)
+```
+
+**NOT:**
+- ❌ Technical Complexity
+- ❌ Market Size (TAM)
+- ❌ Defensible Moat
+- ❌ "Saturated Market" penalties
+
+### Key Insights from 20+ Winners
+
+| What Theoretically Matters | What Actually Matters |
+|---------------------------|----------------------|
+| Market Viability ($12B TAM) | **IGNORED** - Judges don't audit business models |
+| Defensible Moat | **IGNORED** - Winners have zero moats |
+| Technical Complexity | **PENALIZED** - If not visible in demo |
+| "Saturated Market" | **WRONG** - Winners enter saturated markets with twists |
+| Broad Market Appeal | **PENALIZED** - Hyper-specific niches win |
+| Production-Ready Code | **IGNORED** - Hardcoded data acceptable |
+| Novel Innovation | **"Novel Enough"** - Not radically new |
+| Impressive Stack | **Familiar Tools** - Speed > complexity |
+
+### The Winning Formula
+
+**Before Coding:**
+1. Read rules, prizes, sponsor tracks, judging criteria line by line
+2. Choose the track where your idea fits most naturally
+3. Decide the exact 90-second demo flow before building
+
+**During Build:**
+1. Keep the core idea to one killer workflow, not many features
+2. Use familiar stack, templates, sample data if needed
+3. Make it visually understandable fast
+4. Focus on demo-visible parts first
+
+**For Submission:**
+1. Treat the Devpost page like a landing page, not an afterthought
+2. Record the demo early and make it visual, short, criteria-aware
+3. Explain: what it is, who it helps, why it matters, how sponsor tech was used
+4. Include GIFs, images, markdown emphasis
+
 ## Critical Rules Summary
 
-| Rule | Description | Violation Consequence |
-|------|-------------|----------------------|
-| **🔴 SHOW GEMINI DEEP RESEARCH PROMPT** | Must show user the prompt BEFORE execution | Stop, show prompt, wait for approval |
-| **🔴 NEVER BUILD WITHOUT APPROVAL** | Present ideas → Wait for user → THEN build | Stop immediately, apologize, restart |
-| **🔴 ALL IDEAS MUST BE CRITIQUED** | Every idea through all 4 critics | Re-run critique if skipped |
-| **🔴 RESCUE IDEAS GET FULL CRITIQUE** | No exemptions for rescue-generated ideas | Re-run full critique pipeline |
-| **🔴 USER CAN REJECT ALL** | Always offer "none of these, try again" | Present new batch if requested |
-
-## Gemini Deep Research Protocol
-
-### Step 1: Construct Prompt
-```
-"Conduct deep research on [HACKATHON NAME] hackathon:
-
-1. JUROR ANALYSIS: Who are the judges? What are their backgrounds? 
-   What do they care about? Past projects they've praised?
-
-2. PAST WINNERS: What won similar hackathons? Why? Patterns in 
-   winning projects? What made them memorable?
-
-3. BOUNTY ALIGNMENT: Which prizes align with which problem types?
-   Grand Prize vs Category prizes vs Special prizes?
-
-4. PROBLEM VALIDATION: What are REAL, PAINFUL problems that fit 
-   the theme? Market size? Existing solutions? Why insufficient?
-
-5. TECHNICAL CONSTRAINTS: Required stack? Technical differentiators?
-   What would impress judges technically?
-
-6. JUDGING CRITERIA DEEP DIVE: What scores highest on each criterion?
-   Innovation (40%)? Technical (30%)? Demo (30%)?
-
-Return structured analysis with 10+ validated problem-solution pairs 
-that could win this specific hackathon."
-```
-
-### Step 2: Show to User
-- Display full prompt
-- Ask: "Approved?" or "Modify: [changes]"
-- Wait for explicit response
-
-### Step 3: Execute Only After Approval
-- Run Gemini Deep Research with approved prompt
-- Save results to file
-- Show summary to user
-
-## Agent Definitions
-
-### Research Phase
-- **hackathon-researcher**: Deep research on jurors, bounties, past winners, problem validation
-  - **MUST show prompt to user first**
-  - **MUST get user approval before execution**
-- **disruptive-thinker**: Radical alternatives, assumption challenging, cross-industry patterns
-
-### Critique Phase (All Parallel)
-- **originality-critic**: "Will judges remember this?"
-- **judging-criteria-critic**: "Does this maximize rubric score?"
-- **market-viability-critic**: "Will judges buy the future potential?"
-- **disruptive-critic**: "What are we missing? What's the blind spot?"
-
-### Rescue Phase (if needed)
-- **idea-rescue**: Generate 5-7 new ideas → MUST re-run through ALL critics
-
-### Build Phase (After Approval)
-- **scope-guardian**: Continuous feature creep protection
-- **188-agency pool**: Frontend, backend, UX, DevOps agents
+| Rule | Description | Why It Matters |
+|------|-------------|----------------|
+| **Show Research Prompts First** | TWO prompts (Winners + Problem) before execution | User must approve research direction |
+| **Validate Rubric First** | Read rules/prizes/criteria before research | Different hackathons reward different things |
+| **Empathy > Market** | Severe human constraints win over broad markets | Social impact + tech = highest scoring archetype |
+| **Demo > Architecture** | Cinematic presentation beats backend complexity | Judges remember what they SEE |
+| **Scope > Ambition** | One workflow, not platform | 90-second demo is the spec |
+| **Story > Features** | Problem → User → Solution → Magic → Future | Judges remember stories |
+| **Never Build Without Approval** | Present → Wait → Build | Architecture requirement |
+| **Rescue Gets Full Critique** | No exemptions for rescue ideas | Quality control |
 
 ## Communication Protocol
 
 ```
 Orchestrator → Parent Agent → You (human)
      │
-     ├─ 📝 Gemini Deep Research Prompt → Show for approval
+     ├─ 📝 Gemini Deep Research Prompts → Show for approval
      ├─ Progress updates (normal)
-     ├─ 🚨 AWAITING APPROVAL → Telegram 5386760580 when Phase 4 is ready
+     ├─ 🚨 AWAITING APPROVAL → Telegram 5386760580 when Phase 6 ready
      └─ Blockers → Telegram 5386760580
 ```
 
@@ -265,10 +282,92 @@ Orchestrator → Parent Agent → You (human)
 
 | Job | Schedule | Purpose |
 |-----|----------|---------|
-| hackathon-audit | Every 6h | "Is this good enough?" |
-| hackathon-improvement | Every 6h | "What would make this 10% better?" |
+| hackathon-audit | Every 6h | "Does this meet the rubric?" |
+| hackathon-improvement | Every 6h | "What would make the demo 10% better?" |
+
+### Gemini Deep Research Prompt Template
+
+**Use this template for every hackathon. Customize the bracketed sections.**
 
 ---
 
-*Architecture Version: 2.1 - Updated 2026-03-15*
-*Changes: Added mandatory Gemini Deep Research prompt approval step*
+**CONDUCT COMPREHENSIVE DEEP RESEARCH ON [HACKATHON NAME]**
+
+**HACKATHON CONTEXT:**
+- URL: [HACKATHON_URL]
+- Prize Pool: [PRIZE_AMOUNT] (Grand Prize [AMOUNT], Category Prizes [AMOUNTS])
+- Tracks: [TRACK_NAMES]
+- Tech Stack: [REQUIRED_TECHNOLOGIES]
+- Judging Criteria: [CRITERIA_WITH_WEIGHTS]
+
+**RESEARCH TASK 1: PAST WINNERS ANALYSIS ([SPONSOR] Competitions [YEAR_RANGE])**
+
+Analyze the last 15-20 winners of [SPONSOR]/DevPost hackathons, with specific focus on:
+1. **What did they build?** (Project names, core functionality, track/category)
+2. **Why did they win?** (What made them memorable to judges?)
+3. **Demo patterns that scored well:**
+   - How did they structure their 90-second demo?
+   - What was their "magic moment"?
+   - How did they showcase sponsor technology?
+4. **Technical differentiators:**
+   - What specific [SPONSOR_TECH] features did they use?
+   - How did they demonstrate [KEY_CAPABILITIES]?
+   - What made their technical implementation stand out?
+5. **What separates winners from runners-up?**
+   - Common failure patterns of non-winning projects
+   - Why "better technical" projects sometimes lost to "better demo" projects
+
+**RESEARCH TASK 2: PROBLEM SPACE ANALYSIS**
+
+Deeply understand what this hackathon is trying to solve:
+
+1. **Core Problem:**
+   - What is the fundamental issue [THEME] is addressing?
+   - Why is [KEY_CAPABILITY] important?
+   - What does [HACKATHON_TAGLINE] actually mean in practice?
+
+2. **Who has this problem and why is it painful?**
+   - Specific user personas (not generic "everyone")
+   - Real pain points in their daily lives/workflows
+   - Why existing solutions are insufficient
+
+3. **Existing solutions and their gaps:**
+   - Current [CATEGORY] solutions - why they fail
+   - Current [ALTERNATIVES] - why they're limited
+   - Where is the white space for innovation?
+
+4. **What would a winning solution look like?**
+   - Specific features that would impress judges
+   - Demo flow that would score 9+/10
+   - Technical implementation that showcases [SPONSOR_TECH] strengths
+   - Emotional hook that makes judges remember it
+
+5. **Deep understanding of the issue:**
+   - Why do users need [HACKATHON_PROMISE]?
+   - What does [KEY_FEATURE] mean and why does it matter?
+   - Why is [DIFFERENTIATOR] the key differentiator?
+
+**RESEARCH TASK 3: WINNING ARCHETYPE ALIGNMENT**
+
+Based on the Three Winning Archetypes (Empathy Engine, Workflow Eliminator, Illusion of Magic):
+
+1. Which archetype fits best for THIS hackathon's [TRACK_NAME] track?
+2. What specific problem within that archetype would win?
+3. What would the 90-second demo flow look like?
+4. What is the "magic moment" that would make judges say "wow"?
+
+**OUTPUT REQUIREMENTS:**
+
+Provide:
+- 10+ validated problem-solution pairs that could win this specific hackathon
+- Each must include: Problem, Solution, Demo flow, Why it wins, Archetype alignment
+- Rank by winning probability for THIS specific hackathon
+- Note any "disruptive" or "outside the box" angles
+- Specific technical recommendations for [SPONSOR_TECH] usage
+
+**TIME: Take as long as needed for deep, comprehensive analysis**
+
+---
+
+*Architecture Version: 4.0 - Updated 2026-03-15*
+*Changes: Complete rewrite with TWO separate deep researches (Winners + Problem Space), mandatory prompt approval, added Gemini Deep Research Prompt Template*

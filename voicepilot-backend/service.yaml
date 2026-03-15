@@ -1,0 +1,42 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: voicepilot-backend
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        run.googleapis.com/execution-environment: gen2
+        autoscaling.knative.dev/maxScale: '10'
+    spec:
+      containerConcurrency: 80
+      containers:
+        - image: gcr.io/PROJECT_ID/voicepilot-backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: GOOGLE_CLOUD_PROJECT
+              value: PROJECT_ID
+            - name: GOOGLE_CLOUD_LOCATION
+              value: us-central1
+            - name: PORT
+              value: '8080'
+            - name: NODE_ENV
+              value: production
+          resources:
+            limits:
+              cpu: '1'
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 0
+            periodSeconds: 1
+            failureThreshold: 3
+            timeoutSeconds: 3
+  traffic:
+    - percent: 100
+      latestRevision: true

@@ -4,93 +4,172 @@
 
 ### Philosophy
 
-The most important phase is **research and brainstorming**. Never rush this. Deep analysis of jurors, bounties, market fit, and problem validation comes before any code is written.
+The most important phase is **rubric validation and deep research**. Never rush this. Deep analysis of what ACTUALLY wins hackathons (not what theoretically should win) comes before any code is written.
 
 ### 🔴 CRITICAL RULES - NEVER VIOLATE
 
-**0. SHOW GEMINI DEEP RESEARCH PROMPT BEFORE EXECUTION**
-   - Construct the deep research prompt with all required sections
-   - SHOW it to user BEFORE any research happens
-   - WAIT for "approved" or "modify: [changes]"
-   - ONLY then execute Gemini Deep Research
-   - **This is NOT optional - user must see and approve the prompt**
+**0. VALIDATE THE RUBRIC FIRST**
+   - Read rules, prizes, sponsor tracks, judging criteria line by line
+   - Identify what THIS specific hackathon rewards
+   - Adjust scoring weights accordingly
+   - **Different hackathons reward different things**
 
-1. **NEVER BUILD WITHOUT EXPLICIT USER APPROVAL**
+**0a. I ALWAYS CREATE THE DEEP RESEARCH PROMPT, USER RUNS IT**
+   - I construct ONE comprehensive deep research prompt (always)
+   - SHOW prompt to user for approval
+   - NOTIFY user on Telegram with the prompt
+   - USER runs prompt in Gemini Pro (Deep Research enabled)
+   - USER gives me the research results
+   - ONLY then proceed to Phase 3
+   - **I DO NOT execute the research myself**
+
+**1. EMPATHY & HYPER-SPECIFIC UTILITY > MARKET VIABILITY**
+   - Severe human constraints win over broad markets
+   - "ALS patients" beats "healthcare platform"
+   - Social impact + technical execution = highest scoring archetype
+   - Market size is IGNORED by judges
+
+**2. DEMO WOW & NARRATIVE RESONANCE > TECHNICAL COMPLEXITY**
+   - Cinematic presentation beats backend architecture
+   - "Magic moment" in 90 seconds is everything
+   - Visual polish > code complexity
+   - If it can't be shown in demo, it doesn't exist
+
+**3. SCOPE BEATS AMBITION**
+   - One killer workflow, not many features
+   - Hardcoded/mock data acceptable for demo
+   - Working > Impressive-but-broken
+   - 90-second demo is the spec
+
+**4. STORYTELLING IS PART OF THE PRODUCT**
+   - Problem → User → Solution → Magic → Future
+   - Emotional hook in first 10 seconds
+   - Trailer-like video, not screen recording
+   - Judges remember stories, not features
+
+**5. NEVER BUILD WITHOUT EXPLICIT USER APPROVAL**
    - Present ideas → Wait for user selection → THEN build
    - No exceptions, no "I'll just start"
    - User must say "build this one" or equivalent
 
-2. **CRITIQUE IS MANDATORY AND THOROUGH**
-   - ALL ideas must pass through ALL critics
-   - Rescue ideas are NOT exempt - they get full critique
-   - No idea proceeds without scoring
-
-3. **RESCUE IDEAS GET FULL CRITIQUE**
+**6. RESCUE IDEAS GET FULL RE-CRITIQUE**
    - If initial ideas score < 6/10, spawn rescue
    - Rescue ideas go through SAME critique pipeline
    - No shortcuts, no "good enough" bypass
 
+### The Three Winning Archetypes (From 20+ Actual Winners)
+
+**Archetype 1: The Empathy & Accessibility Engine** ⭐⭐⭐
+- Addresses severe human constraints (disability, crisis, severe pain)
+- Hyper-specific niche (not broad platforms)
+- Social impact + technical execution = unbeatable
+- Examples: VITE VERE (cognitive disability), Gaze Link (ALS), ViddyScribe (blind)
+
+**Archetype 2: The Frictionless Workflow Eliminator**
+- Eliminates one recognizable daily annoyance
+- Corporate/enterprise context but specific problem
+- Instant utility, clear before/after
+- Examples: tl;dd (dashboard fatigue), OpsPilot (DevOps on-call)
+
+**Archetype 3: The Illusion of Magic**
+- Novel interaction paradigm feels futuristic
+- Contrarian use of sponsor technology
+- High "demo wow" factor
+- Examples: Jayu (autonomous cursor), Outdraw AI (AI as game opponent)
+
+### What Actually Wins (From Empirical Analysis)
+
+**Score = Rubric Fit (40%) + Demo Confidence (30%) + Story/Impact (20%) + Future Potential (10%)**
+
+**NOT:**
+- ❌ Technical Complexity
+- ❌ Market Size (TAM)
+- ❌ Defensible Moat
+- ❌ "Saturated Market" penalties
+
+**Key Insights:**
+- Winners have shaky business models but amazing demos
+- Winners enter saturated markets with novel twists
+- Winners solve weird, specific problems not "$12B markets"
+- Winners are "novel enough" not "radically new"
+- Winners use familiar tools, not impressive stacks
+- Winners build one workflow, not platforms
+
 ### Pipeline Architecture
 
-**Phase 1: Research & Discovery**
-- Spawn `hackathon-researcher` sub-agent for specific hackathon analysis
-- Spawn `disruptive-thinker` in parallel for radical alternatives
-- Deep juror research (backgrounds, preferences, past winners)
-- Bounty extraction and alignment
-- Market validation and problem analysis
-- Extended brainstorming (minimum 30 min deep research)
-- Generate 10+ ideas, rank top 3
+**Phase 1: Rubric Analysis**
+- Extract: What does THIS hackathon reward?
+- Read rules, prizes, sponsor tracks, judging criteria
+- Identify: Which archetype fits best?
+- Output: Validated rubric weights for this event
 
-**Phase 2: Disruptive Thinking**
+**Phase 2: Gemini Deep Research (USER EXECUTES, NOT ME)**
+- 🔴 CRITICAL: I CONSTRUCT PROMPT, USER RUNS RESEARCH
+- 1. Construct ONE comprehensive deep research prompt
+- 2. SHOW prompt to user for approval
+- 3. NOTIFY user on Telegram with the prompt
+- 4. USER runs prompt in Gemini Pro (Deep Research enabled)
+- 5. USER gives me the research results
+- 6. ONLY then proceed to Phase 3
+- Research covers: Past Winners + Problem Space + Archetype Alignment
+- Output: Deep research report (provided by user)
+
+**Phase 3: Disruptive Thinking**
+- Spawn `disruptive-thinker` in parallel
 - Challenge ALL assumptions
 - "What if we did the opposite?"
-- Cross-industry pattern breaking
-- 3-5 radical alternative approaches
+- Output: 3-5 radical alternatives
 
-**Phase 3: Critique & Validation**
-- Spawn 4 critics in parallel:
-  1. originality-critic: "Will judges remember?"
-  2. judging-criteria-critic: "Maximize score?"
-  3. market-viability-critic: "Buy future?"
-  4. disruptive-critic: "What are we missing?"
-- ALL ideas scored 0-10
-- If any < 6/10: spawn rescue + RE-CRITIQUE
-- Top 5 ideas proceed
+**Phase 4: Idea Synthesis**
+- Synthesize: Research A + Research B + Disruptive
+- Generate: 10+ validated problem-solution pairs
+- Focus: Empathy engines, workflow eliminators
+- Output: Ranked ideas with winning rationale
 
-**Phase 4: User Selection (HARD BLOCK)**
-- Present top 5 with scores and rationale
+**Phase 5: Demo Script Validation**
+- For each top idea: Write 90-second demo script
+- Test: Can we show the "magic moment" visually?
+- Test: Is the empathy hook clear in 10 seconds?
+- Test: Does it make sponsor tech look powerful?
+- Output: Top 5 ideas with demo scripts
+
+**Phase 6: User Selection (HARD BLOCK)**
+- Present top 5 to user
+- Include: Problem, Demo flow, Empathy hook
+- Include: Why it wins THIS hackathon
 - ⚠️ WAIT for explicit user approval
 - ⚠️ NO CODE until user says "build this one"
-- User can reject all and request new batch
 
-**Phase 5: Build with Agency**
-- ONLY after user approval
-- Spawn relevant agents from 188-agency pool
-- Frontend, backend, UX, DevOps agents as needed
-- Parallel workstreams, continuous integration
-- Commit regularly
+**Phase 7: Build (Only After Approval)**
+- Spawn scope-guardian + build agents
+- Focus: Demo-visible parts first
+- Rule: Hardcode/mock data acceptable for demo
+- Rule: Working > Impressive-but-broken
 
-**Phase 6: Audit**
-- Automated quality checks
-- Originality, functionality, requirements
-- Code review
+**Phase 8: Demo Video**
+- Spawn `demo-video-producer`
+- Create: Cinematic 90-second demo video
+- Format: Trailer-like, not screen recording
+- Include: Problem → User → Solution → Magic → Future
 
-**Phase 7: Demo Preparation**
-- Spawn `demo-script-writer` sub-agent
-- Create 3-5 minute demo script
-- Talking points and backup plans
+**Phase 9: Submission Optimization**
+- Spawn `submission-optimizer` (Devpost page)
+- Treat page like landing page, not afterthought
+- Include: GIFs, images, markdown emphasis
 
-**Phase 8: Deploy**
-- Build OCI image
-- Push to GHCR
-- VPS-ready with `docker pull`
+**Phase 10: Final Polish**
+- Spawn `final-polish` (2h before deadline)
+- Run: Audit agent for rubric alignment
+
+**Phase 11: Deploy**
+- Build OCI image → Push to GHCR → VPS ready
 
 ### Active Cron Jobs
 
 | Job | Schedule | Purpose |
 |-----|----------|---------|
-| hackathon-audit | Every 6h | Submission quality check |
-| hackathon-improvement | Every 6h | Continuous improvement cycle |
+| hackathon-audit | Every 6h | "Does this meet the rubric?" |
+| hackathon-improvement | Every 6h | "What would make the demo 10% better?" |
 
 ### Notification Targets
 
@@ -106,6 +185,88 @@ The most important phase is **research and brainstorming**. Never rush this. Dee
 - Each hackathon gets its own research agent
 - Agency agents are reusable building blocks
 
+### Gemini Deep Research Prompt Template
+
+**Use this template for every hackathon. Customize the bracketed sections.**
+
 ---
 
-*Last updated: 2026-03-15*
+**CONDUCT COMPREHENSIVE DEEP RESEARCH ON [HACKATHON NAME]**
+
+**HACKATHON CONTEXT:**
+- URL: [HACKATHON_URL]
+- Prize Pool: [PRIZE_AMOUNT] (Grand Prize [AMOUNT], Category Prizes [AMOUNTS])
+- Tracks: [TRACK_NAMES]
+- Tech Stack: [REQUIRED_TECHNOLOGIES]
+- Judging Criteria: [CRITERIA_WITH_WEIGHTS]
+
+**RESEARCH TASK 1: PAST WINNERS ANALYSIS ([SPONSOR] Competitions [YEAR_RANGE])**
+
+Analyze the last 15-20 winners of [SPONSOR]/DevPost hackathons, with specific focus on:
+1. **What did they build?** (Project names, core functionality, track/category)
+2. **Why did they win?** (What made them memorable to judges?)
+3. **Demo patterns that scored well:**
+   - How did they structure their 90-second demo?
+   - What was their "magic moment"?
+   - How did they showcase sponsor technology?
+4. **Technical differentiators:**
+   - What specific [SPONSOR_TECH] features did they use?
+   - How did they demonstrate [KEY_CAPABILITIES]?
+   - What made their technical implementation stand out?
+5. **What separates winners from runners-up?**
+   - Common failure patterns of non-winning projects
+   - Why "better technical" projects sometimes lost to "better demo" projects
+
+**RESEARCH TASK 2: PROBLEM SPACE ANALYSIS**
+
+Deeply understand what this hackathon is trying to solve:
+
+1. **Core Problem:**
+   - What is the fundamental issue [THEME] is addressing?
+   - Why is [KEY_CAPABILITY] important?
+   - What does [HACKATHON_TAGLINE] actually mean in practice?
+
+2. **Who has this problem and why is it painful?**
+   - Specific user personas (not generic "everyone")
+   - Real pain points in their daily lives/workflows
+   - Why existing solutions are insufficient
+
+3. **Existing solutions and their gaps:**
+   - Current [CATEGORY] solutions - why they fail
+   - Current [ALTERNATIVES] - why they're limited
+   - Where is the white space for innovation?
+
+4. **What would a winning solution look like?**
+   - Specific features that would impress judges
+   - Demo flow that would score 9+/10
+   - Technical implementation that showcases [SPONSOR_TECH] strengths
+   - Emotional hook that makes judges remember it
+
+5. **Deep understanding of the issue:**
+   - Why do users need [HACKATHON_PROMISE]?
+   - What does [KEY_FEATURE] mean and why does it matter?
+   - Why is [DIFFERENTIATOR] the key differentiator?
+
+**RESEARCH TASK 3: WINNING ARCHETYPE ALIGNMENT**
+
+Based on the Three Winning Archetypes (Empathy Engine, Workflow Eliminator, Illusion of Magic):
+
+1. Which archetype fits best for THIS hackathon's [TRACK_NAME] track?
+2. What specific problem within that archetype would win?
+3. What would the 90-second demo flow look like?
+4. What is the "magic moment" that would make judges say "wow"?
+
+**OUTPUT REQUIREMENTS:**
+
+Provide:
+- 10+ validated problem-solution pairs that could win this specific hackathon
+- Each must include: Problem, Solution, Demo flow, Why it wins, Archetype alignment
+- Rank by winning probability for THIS specific hackathon
+- Note any "disruptive" or "outside the box" angles
+- Specific technical recommendations for [SPONSOR_TECH] usage
+
+**TIME: Take as long as needed for deep, comprehensive analysis**
+
+---
+
+*Last updated: 2026-03-15 - Updated with empirically validated winning framework, two-research architecture, and Gemini Deep Research Prompt Template*
