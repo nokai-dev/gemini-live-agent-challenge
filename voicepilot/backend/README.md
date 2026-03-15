@@ -6,4 +6,4 @@ FastAPI backend for VoicePilot — voice-controlled frontend development assista
 
 This file was modified to trigger the GitHub Actions workflow for building the multi-arch OCI image.
 
-Build: main-331c5d9 (unified Dockerfile with frontend + demo)
+Build: main-e7ee014 (static files serving fix)
