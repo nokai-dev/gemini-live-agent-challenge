@@ -37,4 +37,23 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ---
 
+## Git Configuration
+
+### Identity
+- **Name:** no-kay
+- **Email:** dev@nokai.moe
+
+### GitHub
+- **Username:** nokai-dev
+- **Token:** Use `GITHUB_TOKEN` environment variable (never commit to git)
+- **Default Repo:** gemini-live-agent-challenge
+
+### OCI Images (Required for all hackathons)
+- **Registry:** ghcr.io
+- **Pattern:** `ghcr.io/nokai-dev/{repo}/{project}:latest`
+- **Auto-build:** GitHub Actions workflow required (`.github/workflows/build-oci.yml`)
+- **Verification:** Check GitHub Actions tab after push
+
+---
+
 Add whatever helps you do your job. This is your cheat sheet.
