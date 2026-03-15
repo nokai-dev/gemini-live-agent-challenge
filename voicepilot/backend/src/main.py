@@ -1,4 +1,4 @@
-"""Main FastAPI application for VoicePilot."""
+"""Main FastAPI application for VoicePilot with extensive logging."""
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
@@ -9,37 +9,41 @@ import json
 import os
 from typing import Optional
 
-# Configure logging
-class JSONFormatter(logging.Formatter):
-    """JSON formatter for structured logging."""
-    def format(self, record):
-        log_data = {
-            "timestamp": self.formatTime(record),
-            "level": record.levelname,
-            "logger": record.name,
-            "message": record.getMessage(),
-        }
-        if hasattr(record, "extra"):
-            log_data.update(record.extra)
-        return json.dumps(log_data)
-
-# Setup logging
-log_handler = logging.StreamHandler(sys.stdout)
-log_handler.setFormatter(logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-))
-
+# Configure detailed logging
 logging.basicConfig(
-    level=logging.INFO,
-    handlers=[log_handler]
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 logger = logging.getLogger(__name__)
+
+# Log startup
+logger.info("=" * 60)
+logger.info("VoicePilot Starting Up")
+logger.info("=" * 60)
 
 # Get environment variables
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 PORT = int(os.getenv("PORT", "8080"))
 HOST = os.getenv("HOST", "0.0.0.0")
 STATIC_PATH = os.getenv("STATIC_FILES_PATH", "/app/static")
+DEMO_PATH = os.getenv("DEMO_PROJECT_PATH", "/app/demo-project")
+
+logger.info(f"Environment: HOST={HOST}, PORT={PORT}")
+logger.info(f"Static path: {STATIC_PATH}")
+logger.info(f"Demo path: {DEMO_PATH}")
+logger.info(f"Static path exists: {os.path.exists(STATIC_PATH)}")
+logger.info(f"Demo path exists: {os.path.exists(DEMO_PATH)}")
+
+# List static directory contents
+if os.path.exists(STATIC_PATH):
+    logger.info(f"Static directory contents:")
+    for item in os.listdir(STATIC_PATH):
+        logger.info(f"  - {item}")
+else:
+    logger.error(f"Static directory NOT FOUND: {STATIC_PATH}")
 
 # Create FastAPI app
 app = FastAPI(
@@ -61,12 +65,15 @@ app.add_middleware(
 if os.path.exists(STATIC_PATH):
     app.mount("/static", StaticFiles(directory=STATIC_PATH), name="static")
     logger.info(f"Mounted static files from {STATIC_PATH}")
+else:
+    logger.error(f"Cannot mount static files: {STATIC_PATH} does not exist")
 
 # Health check endpoint
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     import time
+    logger.debug("Health check called")
     return {
         "status": "healthy",
         "service": "VoicePilot",
@@ -77,17 +84,23 @@ async def health_check():
             "gemini_api": bool(GEMINI_API_KEY),
             "voice_interaction": True,
             "screen_analysis": True
+        },
+        "paths": {
+            "static_exists": os.path.exists(STATIC_PATH),
+            "demo_exists": os.path.exists(DEMO_PATH)
         }
     }
 
 @app.get("/ready")
 async def readiness_check():
     """Readiness check for Kubernetes/Cloud Run."""
+    logger.debug("Readiness check called")
     return {
         "ready": True,
         "checks": {
             "config_loaded": True,
-            "gemini_configured": bool(GEMINI_API_KEY)
+            "gemini_configured": bool(GEMINI_API_KEY),
+            "static_files": os.path.exists(STATIC_PATH)
         }
     }
 
@@ -95,25 +108,47 @@ async def readiness_check():
 @app.get("/")
 async def serve_frontend():
     """Serve the frontend HTML."""
+    logger.info("Root endpoint called")
     index_path = os.path.join(STATIC_PATH, "index.html")
+    logger.info(f"Looking for index.html at: {index_path}")
+    logger.info(f"index.html exists: {os.path.exists(index_path)}")
+    
     if os.path.exists(index_path):
+        logger.info("Serving index.html")
         return FileResponse(index_path)
+    
+    logger.error(f"index.html NOT FOUND at {index_path}")
     return JSONResponse({
-        "message": "VoicePilot API is running",
+        "error": "Frontend not found",
+        "message": "VoicePilot API is running but frontend is not built",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
+        "static_path": STATIC_PATH,
+        "static_exists": os.path.exists(STATIC_PATH),
+        "static_contents": os.listdir(STATIC_PATH) if os.path.exists(STATIC_PATH) else []
     })
+
+# Debug endpoint
+@app.get("/debug")
+async def debug_info():
+    """Debug endpoint with system info."""
+    logger.info("Debug endpoint called")
+    return {
+        "environment": dict(os.environ),
+        "cwd": os.getcwd(),
+        "files_in_app": os.listdir("/app") if os.path.exists("/app") else [],
+        "static_path": STATIC_PATH,
+        "static_exists": os.path.exists(STATIC_PATH),
+        "static_contents": os.listdir(STATIC_PATH) if os.path.exists(STATIC_PATH) else [],
+        "demo_path": DEMO_PATH,
+        "demo_exists": os.path.exists(DEMO_PATH),
+        "demo_contents": os.listdir(DEMO_PATH) if os.path.exists(DEMO_PATH) else []
+    }
 
 # WebSocket endpoint for voice sessions
 @app.websocket("/ws/voice")
 async def voice_websocket(websocket: WebSocket):
-    """WebSocket endpoint for real-time voice and screen sessions.
-    
-    This endpoint handles:
-    - Bidirectional audio streaming
-    - Screen capture analysis
-    - Code modification commands
-    """
+    """WebSocket endpoint for real-time voice and screen sessions."""
     await websocket.accept()
     logger.info("WebSocket connection accepted")
     
@@ -121,9 +156,9 @@ async def voice_websocket(websocket: WebSocket):
         while True:
             # Receive message from client
             message = await websocket.receive_json()
+            logger.debug(f"WebSocket received: {message}")
             
             if message.get("type") == "audio":
-                # Process audio data
                 logger.info("Received audio chunk")
                 await websocket.send_json({
                     "type": "status",
@@ -131,7 +166,6 @@ async def voice_websocket(websocket: WebSocket):
                 })
                 
             elif message.get("type") == "screen":
-                # Process screen capture
                 logger.info("Received screen capture")
                 await websocket.send_json({
                     "type": "status", 
@@ -139,11 +173,9 @@ async def voice_websocket(websocket: WebSocket):
                 })
                 
             elif message.get("type") == "command":
-                # Process voice command
                 command = message.get("data", "")
                 logger.info(f"Received command: {command}")
                 
-                # Mock response for demo
                 await websocket.send_json({
                     "type": "modification",
                     "component": "Button",
@@ -184,6 +216,7 @@ async def modify_code(request: dict):
 @app.get("/api/project/state")
 async def get_project_state():
     """Get current project state and available components."""
+    logger.debug("Project state requested")
     return {
         "project": "demo-project",
         "files": ["LandingPage.jsx"],
@@ -196,12 +229,15 @@ async def get_project_state():
         ]
     }
 
+logger.info("VoicePilot initialization complete")
+
 if __name__ == "__main__":
     import uvicorn
+    logger.info(f"Starting uvicorn on {HOST}:{PORT}")
     uvicorn.run(
         "main:app",
         host=HOST,
         port=PORT,
         reload=False,
-        log_level="info"
+        log_level="debug"
     )
