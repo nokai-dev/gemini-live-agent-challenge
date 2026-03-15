@@ -26,7 +26,7 @@
 
 **Rule:** Every hackathon project MUST include:
 
-1. **Dockerfile** in project root or `/backend/`
+1. **Unified Dockerfile** at `{project}/Dockerfile` — includes backend + frontend + demo
 2. **GitHub Actions workflow** at `.github/workflows/build-oci.yml`
 3. **Multi-arch support** (linux/amd64, linux/arm64) — REQUIRED
 4. **Auto-push to GHCR** on every commit to main
@@ -35,9 +35,24 @@
 **Template workflow:** See `gemini-live-agent-challenge/.github/workflows/build-oci.yml`
 
 **Key requirements:**
+- Single Dockerfile builds everything (backend + frontend + demo)
 - Use `docker/setup-qemu-action@v3` for multi-arch support
 - Use `platforms: linux/amd64,linux/arm64` in build-push-action
-- This ensures images work on both x86_64 and ARM64 (Apple Silicon, AWS Graviton)
+- Context should be repo root, Dockerfile path: `./{project}/Dockerfile`
+
+**Unified Dockerfile structure:**
+```dockerfile
+# Stage 1: Build frontend
+FROM node:20-alpine AS frontend-builder
+...
+
+# Stage 2: Runtime with backend + frontend + demo
+FROM python:3.11-slim
+COPY --from=frontend-builder /app/frontend/dist/ ./static/
+COPY backend/ ./backend/
+COPY demo-project/ ./demo-project/
+...
+```
 
 **Verification:** After build, agent MUST check GitHub Actions tab and confirm image appears at:
 `ghcr.io/{username}/{repo}/{project}:latest`
@@ -45,6 +60,8 @@
 **Test locally:**
 ```bash
 docker pull ghcr.io/nokai-dev/gemini-live-agent-challenge/voicepilot:latest
+docker run -p 8080:8080 ghcr.io/.../voicepilot:latest
+# Should serve backend API + frontend static files + demo project
 ```
 
 ---
