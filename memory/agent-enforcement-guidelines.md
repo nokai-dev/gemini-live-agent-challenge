@@ -28,13 +28,24 @@
 
 1. **Dockerfile** in project root or `/backend/`
 2. **GitHub Actions workflow** at `.github/workflows/build-oci.yml`
-3. **Auto-push to GHCR** on every commit to main
-4. **No manual docker commands** required from user
+3. **Multi-arch support** (linux/amd64, linux/arm64) — REQUIRED
+4. **Auto-push to GHCR** on every commit to main
+5. **No manual docker commands** required from user
 
 **Template workflow:** See `gemini-live-agent-challenge/.github/workflows/build-oci.yml`
 
+**Key requirements:**
+- Use `docker/setup-qemu-action@v3` for multi-arch support
+- Use `platforms: linux/amd64,linux/arm64` in build-push-action
+- This ensures images work on both x86_64 and ARM64 (Apple Silicon, AWS Graviton)
+
 **Verification:** After build, agent MUST check GitHub Actions tab and confirm image appears at:
 `ghcr.io/{username}/{repo}/{project}:latest`
+
+**Test locally:**
+```bash
+docker pull ghcr.io/nokai-dev/gemini-live-agent-challenge/voicepilot:latest
+```
 
 ---
 

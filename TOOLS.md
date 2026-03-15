@@ -52,6 +52,7 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 - **Registry:** ghcr.io
 - **Pattern:** `ghcr.io/nokai-dev/{repo}/{project}:latest`
 - **Auto-build:** GitHub Actions workflow required (`.github/workflows/build-oci.yml`)
+- **Multi-arch:** MUST support linux/amd64 AND linux/arm64 (use QEMU in Actions)
 - **Verification:** Check GitHub Actions tab after push
 
 ---
