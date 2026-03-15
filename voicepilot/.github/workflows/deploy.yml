@@ -47,7 +47,7 @@ jobs:
 
     - name: Build and push container
       run: |
-        cd backend
+        # Build from root directory to include both frontend and backend
         gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}
 
     - name: Deploy to Cloud Run
@@ -57,7 +57,7 @@ jobs:
           --platform managed \
           --region ${{ env.REGION }} \
           --allow-unauthenticated \
-          --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
+          --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},STATIC_FILES_PATH=/app/static,DEMO_PROJECT_PATH=/app/demo-project" \
           --memory 1Gi \
           --cpu 1 \
           --concurrency 80 \

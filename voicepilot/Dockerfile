@@ -41,7 +41,8 @@ RUN echo "=== Installing Python dependencies ===" && \
 COPY voicepilot/backend/src/ ./backend/
 
 # Frontend static files
-COPY --from=frontend-builder /app/frontend/dist/ ./static/
+# Copy renderer folder contents (the actual web frontend) to static root
+COPY --from=frontend-builder /app/frontend/dist/renderer/ ./static/
 RUN echo "=== Static files copied ===" && \
     ls -la /app/static/ && \
     echo "=== Static directory size ===" && \
