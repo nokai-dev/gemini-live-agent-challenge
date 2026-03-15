@@ -10,6 +10,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 from ..services.gemini_live import GeminiLiveClient
 from ..services.vision_analyzer import VisionAnalyzer, FocusCoach, ScreenAnalysis, ActivityType
+from ..services.vision_cache import CachedVisionAnalyzer, VisionCache
 from ..services.interruption_detector import (
     InterruptionDetector, InterruptionEvent, InterruptionDecision,
     InterruptionType, InterruptionUrgency, InterruptionQueue
@@ -28,10 +29,14 @@ class ConnectionManager:
         self.active_connections: Dict[str, WebSocket] = {}
         self.gemini_clients: Dict[str, GeminiLiveClient] = {}
         self.vision_analyzers: Dict[str, VisionAnalyzer] = {}
+        self.cached_vision_analyzers: Dict[str, CachedVisionAnalyzer] = {}
         self.focus_coaches: Dict[str, FocusCoach] = {}
         self.interruption_detectors: Dict[str, InterruptionDetector] = {}
         self.interruption_queues: Dict[str, InterruptionQueue] = {}
         self.session_manager = SessionManager()
+        
+        # Shared vision cache across connections
+        self.shared_vision_cache = VisionCache(max_size=200, ttl_seconds=60.0)
         
         # Track last activity for inactivity detection
         self.last_activity: Dict[str, float] = {}
@@ -62,6 +67,7 @@ class ConnectionManager:
         # Clean up other services
         for service_dict in [
             self.vision_analyzers,
+            self.cached_vision_analyzers,
             self.focus_coaches,
             self.interruption_detectors,
             self.interruption_queues
@@ -109,6 +115,7 @@ async def handle_focus_session(websocket: WebSocket):
     # Initialize services
     gemini_client: Optional[GeminiLiveClient] = None
     vision_analyzer: Optional[VisionAnalyzer] = None
+    cached_vision_analyzer: Optional[CachedVisionAnalyzer] = None
     focus_coach: Optional[FocusCoach] = None
     interruption_detector: Optional[InterruptionDetector] = None
     interruption_queue: Optional[InterruptionQueue] = None
@@ -150,11 +157,11 @@ async def handle_focus_session(websocket: WebSocket):
         nonlocal last_screen_analysis, last_interruption_time
         
         try:
-            if not vision_analyzer:
+            if not cached_vision_analyzer:
                 return
             
-            # Analyze screen
-            analysis = await vision_analyzer.analyze_screen(
+            # Analyze screen with caching
+            analysis, cache_metadata = await cached_vision_analyzer.analyze_screen(
                 image_base64=image_base64,
                 current_goal=current_goal,
                 previous_analysis=last_screen_analysis
@@ -230,6 +237,10 @@ async def handle_focus_session(websocket: WebSocket):
                     "description": analysis.description,
                     "is_off_task": analysis.is_off_task,
                     "confidence": analysis.confidence
+                },
+                "cache_info": {
+                    "hit": cache_metadata.get("cached", False),
+                    "hit_rate": cache_metadata.get("cache_stats", {}).get("hit_rate_percent", 0)
                 }
             })
             
@@ -260,6 +271,10 @@ async def handle_focus_session(websocket: WebSocket):
                 # Initialize services
                 gemini_client = GeminiLiveClient(settings.GEMINI_API_KEY)
                 vision_analyzer = VisionAnalyzer(settings.GEMINI_API_KEY)
+                cached_vision_analyzer = CachedVisionAnalyzer(
+                    vision_analyzer,
+                    manager.shared_vision_cache
+                )
                 focus_coach = FocusCoach()
                 interruption_detector = InterruptionDetector()
                 interruption_queue = InterruptionQueue()
@@ -267,6 +282,7 @@ async def handle_focus_session(websocket: WebSocket):
                 # Store services
                 manager.gemini_clients[connection_id] = gemini_client
                 manager.vision_analyzers[connection_id] = vision_analyzer
+                manager.cached_vision_analyzers[connection_id] = cached_vision_analyzer
                 manager.focus_coaches[connection_id] = focus_coach
                 manager.interruption_detectors[connection_id] = interruption_detector
                 manager.interruption_queues[connection_id] = interruption_queue

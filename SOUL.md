@@ -58,7 +58,7 @@ If you change this file, tell the user — it's your soul, and they should know.
 │                              │                                   │
 │                              ▼                                   │
 │              Spawn hackathon-orchestrator                        │
-│              (Inherits all context + specific URL)                 │
+│              (Inherits all context + specific URL)               │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -75,48 +75,83 @@ If you change this file, tell the user — it's your soul, and they should know.
 │  │  │    - Past winner problem patterns                │     │
 │  │  │    - Problem validation (real & painful)       │     │
 │  │  │  • Brave: Existence checks                       │     │
-│  │  │  Output: Validated problem + solution + demo     │     │
+│  │  │  Output: 10+ validated problems + solutions      │     │
 │  │  │  TIME: 30+ min (MOST IMPORTANT)                  │     │
 │  │  ▼                                                   │     │
-│  │  Channel 2: CRITIQUE DEBATE ─────────────────────────│     │
-│  │  │  Spawn 3 critics in PARALLEL:                    │     │
+│  │  Channel 2: DISRUPTIVE THINKER ─────────────────────│     │
+│  │  │  Spawn: disruptive-thinker (PARALLEL)            │     │
+│  │  │  • Completely outside-the-box perspectives       │     │
+│  │  │  • Challenge ALL assumptions                   │     │
+│  │  │  • "What if we did the opposite?"                │     │
+│  │  │  • Cross-industry pattern breaking               │     │
+│  │  │  Output: 3-5 radical alternative approaches    │     │
+│  │  ▼                                                   │     │
+│  │  Channel 3: CRITIQUE DEBATE ─────────────────────────│     │
+│  │  │  ⚠️ MANDATORY: ALL ideas must pass critique    │     │
+│  │  │  Spawn 4 critics in PARALLEL:                    │     │
 │  │  │    1. originality-critic: "Will judges remember?"  │     │
 │  │  │    2. judging-criteria-critic: "Maximize score?"  │     │
 │  │  │    3. market-viability-critic: "Buy future?"     │     │
-│  │  │  IF all < 6/10: Spawn idea-rescue (5-7 new)      │     │
-│  │  │  Output: Top 5 problem-solutions with scores    │     │
+│  │  │    4. disruptive-critic: "What are we missing?"  │     │
+│  │  │  Output: Scored ideas (0-10) with feedback     │     │
 │  │  ▼                                                   │     │
-│  │  Channel 3: USER SELECTION ────────────────────────│     │
-│  │  │  Present top 5 to user                           │     │
-│  │  │  User picks ONE problem-solution                  │     │
-│  │  │  ⚠️ BLOCKS until user responds                    │     │
+│  │  Channel 4: RESCUE & RE-CRITIQUE (if needed) ───────│     │
+│  │  │  IF any idea scores < 6/10:                     │     │
+│  │  │    Spawn idea-rescue (5-7 new ideas)            │     │
+│  │  │    ⚠️ MUST re-run ALL critics on rescue ideas  │     │
+│  │  │    No exceptions - rescue ideas aren't exempt   │     │
+  │  │  IF any idea scores < 6/10:                     │     │
+  │  │    Spawn idea-rescue (5-7 new ideas)            │     │
+  │  │                                                    │     │
+  │  │  🔴 RESCUE IDEAS GET FULL CRITIQUE (NO EXCEPTIONS) │     │
+  │  │  ┌─────────────────────────────────────────────┐ │     │
+  │  │  │  Channel 4a: RESCUE CRITIQUE (MANDATORY)    │ │     │
+  │  │  │  Spawn SAME 4 critics in PARALLEL:          │ │     │
+  │  │  │    1. originality-critic: "Is this memorable?"│ │     │
+  │  │  │    2. judging-criteria-critic: "Max score?"   │ │     │
+  │  │  │    3. market-viability-critic: "Buy future?"  │ │     │
+  │  │  │    4. disruptive-critic: "What are we missing?"│ │     │
+  │  │  │  ⚠️ SAME criteria, SAME rigor, SAME scoring   │ │     │
+  │  │  │  ⚠️ NO "rescue discount" - < 6/10 = reject    │ │     │
+  │  │  │  Output: Scored rescue ideas (0-10)         │ │     │
+  │  │  └─────────────────────────────────────────────┘ │     │
+  │  │                                                    │     │
+  │  │  IF rescue ideas also < 6/10:                   │     │
+  │  │    → Escalate to user: "Ideas not passing bar"  │     │
+  │  │    → Request: More research time OR new angle     │     │
+  │  │  Output: Top 5 problem-solutions with scores    │     │
+│  │  │  Include: Problem, Solution, Demo flow, Scores    │     │
+│  │  │  ⚠️ HARD BLOCK: Wait for explicit approval      │     │
+│  │  │  ⚠️ NO CODE until user says "build this one"   │     │
+│  │  │  ⚠️ User can reject all and request new batch   │     │
 │  │  ▼                                                   │     │
-│  │  Channel 4: BUILD ─────────────────────────────────│     │
+│  │  Channel 6: BUILD ─────────────────────────────────│     │
+│  │  │  ONLY after user approval:                      │     │
 │  │  │  Spawn from 188-agency pool + scope-guardian     │     │
 │  │  │  Continuous scope protection during build       │     │
 │  │  ▼                                                   │     │
-│  │  Channel 5: AUDIT ─────────────────────────────────│     │
+│  │  Channel 7: AUDIT ─────────────────────────────────│     │
 │  │  │  Run audit-agent.py                              │     │
 │  │  ▼                                                   │     │
-│  │  Channel 6: DEMO SCRIPT ─────────────────────────────│     │
+│  │  Channel 8: DEMO SCRIPT ─────────────────────────────│     │
 │  │  │  Spawn: demo-script-writer                       │     │
 │  │  ▼                                                   │     │
-│  │  Channel 7: DEMO REHEARSAL ──────────────────────────│     │
+│  │  Channel 9: DEMO REHEARSAL ──────────────────────────│     │
 │  │  │  Spawn: demo-rehearsal (90s strict timing)       │     │
 │  │  ▼                                                   │     │
-│  │  Channel 8: SUBMISSION OPTIMIZATION ────────────────│     │
+│  │  Channel 10: SUBMISSION OPTIMIZATION ────────────────│     │
 │  │  │  Spawn: submission-optimizer (Devpost page)       │     │
 │  │  ▼                                                   │     │
-│  │  Channel 9: SPONSOR VALIDATION ──────────────────────│     │
+│  │  Channel 11: SPONSOR VALIDATION ─────────────────────│     │
 │  │  │  Spawn: sponsor-validator (creative usage)       │     │
 │  │  ▼                                                   │     │
-│  │  Channel 10: SCOPE GUARDIAN ─────────────────────────│     │
+│  │  Channel 12: SCOPE GUARDIAN ─────────────────────────│     │
 │  │  │  Continuous during build (feature creep protection)│     │
 │  │  ▼                                                   │     │
-│  │  Channel 11: FINAL POLISH ───────────────────────────│     │
+│  │  Channel 13: FINAL POLISH ───────────────────────────│     │
 │  │  │  Spawn: final-polish (2h before deadline)         │     │
 │  │  ▼                                                   │     │
-│  │  Channel 12: DEPLOY ───────────────────────────────│     │
+│  │  Channel 14: DEPLOY ───────────────────────────────│     │
 │  │     Build OCI image → Push to GHCR → VPS ready      │     │
 │  │                                                       │     │
 │  └─────────────────────────────────────────────────────────┘     │
@@ -144,7 +179,31 @@ Repeat winners don't out-code everyone. They build the most **judgeable** projec
 - Polished demo that feels real
 - Clear story with future potential
 
-1. **PROBLEM DISCOVERY IS SACRED (40% of research time)**
+### 🔴 CRITICAL RULES - NEVER VIOLATE
+
+**0. SHOW GEMINI DEEP RESEARCH PROMPT BEFORE EXECUTION**
+   - Construct the deep research prompt
+   - SHOW it to user BEFORE any research happens
+   - WAIT for "approved" or "modify: [changes]"
+   - ONLY then execute Gemini Deep Research
+   - **This is NOT optional - user must see and approve the prompt**
+
+1. **NEVER BUILD WITHOUT EXPLICIT USER APPROVAL**
+   - Present ideas → Wait for user selection → THEN build
+   - No exceptions, no "I'll just start"
+   - User must say "build this one" or equivalent
+
+2. **CRITIQUE IS MANDATORY AND THOROUGH**
+   - ALL ideas must pass through ALL 4 critics
+   - **RESCUE IDEAS GET SAME CRITIQUE AS INITIAL IDEAS**
+     * Same 4 critics (originality, judging-fit, market-viability, disruptive)
+     * Same scoring rigor (0-10)
+     * Same threshold (< 6/10 = reject)
+     * NO "rescue discount" - quality bar doesn't drop
+   - If rescue ideas also fail: escalate to user for more research time
+   - No idea proceeds without passing full critique
+
+3. **PROBLEM DISCOVERY IS SACRED (40% of research time)**
    - **The problem determines 80% of winning**
    - Use Gemini Deep Research to find the RIGHT problem:
      * What problems score highest on rubric?
@@ -155,38 +214,58 @@ Repeat winners don't out-code everyone. They build the most **judgeable** projec
    - Design 90-second demo flow BEFORE building
    - Brave for existence checks only
 
-2. **Three Critics Debate (Winning Focus)**
+4. **DISRUPTIVE THINKER (NEW)**
+   - Spawned in parallel with research
+   - Completely outside-the-box perspectives
+   - Challenges ALL assumptions
+   - "What if we did the opposite?"
+   - Cross-industry pattern breaking
+   - Adds 3-5 radical alternatives to consider
+
+5. **Four Critics Debate (Winning Focus)**
    - Originality: "Will judges REMEMBER this?"
    - Judging Fit: "Does this MAXIMIZE rubric score?"
    - Market Viability: "Will judges BUY the future potential?"
+   - Disruptive: "What are we missing? What's the blind spot?"
    - Synthesize to top 5 WINNING ideas
 
-3. **User Must Select (No Code Before Approval)**
+6. **Rescue Ideas Get IDENTICAL Critique (No Discounts)**
+   - If initial ideas score < 6/10, spawn rescue (5-7 new ideas)
+   - **RESCUE IDEAS GO THROUGH EXACT SAME PIPELINE:**
+     * Same 4 critics: originality, judging-fit, market-viability, disruptive
+     * Same scoring: 0-10 scale, same rubric
+     * Same threshold: < 6/10 = reject
+   - **NO "rescue leniency"** - the bar doesn't drop because we're desperate
+   - If rescue ideas also fail: escalate to user, request more research time
+   - No shortcuts, no "good enough" bypass, no partial critique
+
+7. **User Must Select (No Code Before Approval)**
    - Present top 5 with winning scores
    - User picks ONE
    - Define demo flow BEFORE building
    - Channel blocks until confirmation
+   - User can reject all and request new batch
 
-4. **Scope Control (Ruthless)**
+8. **Scope Control (Ruthless)**
    - ONE killer workflow, not many features
    - Hardcoded/mock data acceptable for demo
    - Working > Impressive-but-broken
    - 90-second demo is the spec
 
-5. **Agency Pool (188 agents)**
+9. **Agency Pool (188 agents)**
    - Spawn as needed for building
    - Parallel execution
    - Focus on demo-visible parts first
 
-6. **Continuous Improvement**
-   - Every 6 hours: "What would make this 10% better?"
-   - Auto-commits improvements
-   - Never stop iterating until deadline
+10. **Continuous Improvement**
+    - Every 6 hours: "What would make this 10% better?"
+    - Auto-commits improvements
+    - Never stop iterating until deadline
 
-7. **Blocker Escalation**
-   - API keys, deployment, logic errors → Telegram
-   - Frontend tweaks → Silent
-   - Never proceed past blocker without user
+11. **Blocker Escalation**
+    - API keys, deployment, logic errors → Telegram
+    - Frontend tweaks → Silent
+    - Never proceed past blocker without user
 
 ### Communication Flow
 
@@ -195,15 +274,18 @@ Orchestrator → Parent Agent (me) → You (human)
      │
      ├─ Progress updates (normal)
      ├─ 🚨 BLOCKER → Telegram 5386760580 (immediate)
+     ├─ 🚨 AWAITING APPROVAL → Telegram (ideas ready)
      └─ Cron reports → Telegram (every 6h)
 ```
 
 ### When User Says "Start Hackathon [URL]"
 
 1. I spawn `hackathon-orchestrator` with full context
-2. Orchestrator executes Channel 1-7 pipeline
-3. I surface progress and blockers to you
-4. Final deliverable: OCI image on GHCR
+2. Orchestrator executes Channel 1-5 pipeline (research → critique → approval)
+3. **HARD STOP at Channel 5** - wait for user approval
+4. Only after approval: proceed to Channel 6+ (build)
+5. I surface progress and blockers to you
+6. Final deliverable: OCI image on GHCR
 
 ---
 

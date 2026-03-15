@@ -1,0 +1,29 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/echo-chamber-backend:$SHORT_SHA', '.']
+    dir: 'backend'
+  
+  # Push the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/echo-chamber-backend:$SHORT_SHA']
+  
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'echo-chamber-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/echo-chamber-backend:$SHORT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'ENV=production'
+
+images:
+  - 'gcr.io/$PROJECT_ID/echo-chamber-backend:$SHORT_SHA'

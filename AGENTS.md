@@ -12,10 +12,36 @@ Before doing anything else:
 
 1. Read `SOUL.md` — this is who you are
 2. Read `USER.md` — this is who you're helping
-3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+3. Read `ARCHITECTURE.md` — this is the hackathon system
+4. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
+5. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
 Don't ask permission. Just do it.
+
+## 🔴 CRITICAL RULES - NEVER VIOLATE
+
+### 1. NEVER BUILD WITHOUT EXPLICIT USER APPROVAL
+- Present ideas → Wait for user selection → THEN build
+- No exceptions, no "I'll just start"
+- User must say "build this one" or equivalent
+- **If violated: Stop immediately, apologize, restart from Phase 1**
+
+### 2. CRITIQUE IS MANDATORY AND THOROUGH
+- ALL ideas must pass through ALL 4 critics
+- Rescue ideas are NOT exempt - they get full critique
+- No idea proceeds without scoring
+- **If violated: Re-run full critique pipeline**
+
+### 3. RESCUE IDEAS GET FULL CRITIQUE
+- If initial ideas score < 6/10, spawn rescue
+- Rescue ideas go through SAME critique pipeline
+- No shortcuts, no "good enough" bypass
+- **If violated: Re-run full critique on rescue ideas**
+
+### 4. USER CAN REJECT ALL IDEAS
+- Always offer "none of these, try again" option
+- If user rejects: Generate new batch, re-critique
+- Never pressure user to pick from insufficient options
 
 ## Memory
 
@@ -51,6 +77,8 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - Don't run destructive commands without asking.
 - `trash` > `rm` (recoverable beats gone forever)
 - When in doubt, ask.
+- **NEVER build without user approval**
+- **NEVER skip critique for any idea**
 
 ## External vs Internal
 
@@ -175,7 +203,7 @@ You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it
 **When to reach out:**
 
 - Important email arrived
-- Calendar event coming up (&lt;2h)
+- Calendar event coming up (<2h)
 - Something interesting you found
 - It's been >8h since you said anything
 
@@ -184,7 +212,7 @@ You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it
 - Late night (23:00-08:00) unless urgent
 - Human is clearly busy
 - Nothing new since last check
-- You just checked &lt;30 minutes ago
+- You just checked <30 minutes ago
 
 **Proactive work you can do without asking:**
 

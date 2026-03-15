@@ -67,43 +67,56 @@ If you change this file, tell the user — it's your soul, and they should know.
 │  ┌─────────────────────────────────────────────────────────┐     │
 │  │  CHANNEL PIPELINE (Go-style, blocking):               │     │
 │  │                                                       │     │
-│  │  Channel 1: RESEARCH ────────────────────────────────│     │
+│  │  Channel 1: PROBLEM DISCOVERY ───────────────────────│     │
 │  │  │  Spawn: hackathon-researcher                      │     │
-│  │  │  • Gemini API: Deep juror/bounty/market research   │     │
-│  │  │  • Brave API: Existence checks (cost-optimized)    │     │
-│  │  │  Output: 10+ raw ideas                            │     │
+│  │  │  • Gemini Deep Research: Find WINNING PROBLEM    │     │
+│  │  │    - Problem types that score highest on rubric   │     │
+│  │  │    - Juror problem preferences                   │     │
+│  │  │    - Past winner problem patterns                │     │
+│  │  │    - Problem validation (real & painful)       │     │
+│  │  │  • Brave: Existence checks                       │     │
+│  │  │  Output: Validated problem + solution + demo     │     │
+│  │  │  TIME: 30+ min (MOST IMPORTANT)                  │     │
 │  │  ▼                                                   │     │
 │  │  Channel 2: CRITIQUE DEBATE ─────────────────────────│     │
 │  │  │  Spawn 3 critics in PARALLEL:                    │     │
-│  │  │    1. originality-critic: "Does this exist?"       │     │
-│  │  │    2. judging-criteria-critic: "Does it fit?"    │     │
-│  │  │    3. market-viability-critic: "Real market?"     │     │
-│  │  │  They debate, score, synthesize                   │     │
-│  │  │  Output: Top 5 ideas with scores                  │     │
+│  │  │    1. originality-critic: "Will judges remember?"  │     │
+│  │  │    2. judging-criteria-critic: "Maximize score?"  │     │
+│  │  │    3. market-viability-critic: "Buy future?"     │     │
+│  │  │  IF all < 6/10: Spawn idea-rescue (5-7 new)      │     │
+│  │  │  Output: Top 5 problem-solutions with scores    │     │
 │  │  ▼                                                   │     │
 │  │  Channel 3: USER SELECTION ────────────────────────│     │
 │  │  │  Present top 5 to user                           │     │
-│  │  │  User picks ONE                                   │     │
+│  │  │  User picks ONE problem-solution                  │     │
 │  │  │  ⚠️ BLOCKS until user responds                    │     │
 │  │  ▼                                                   │     │
 │  │  Channel 4: BUILD ─────────────────────────────────│     │
-│  │  │  Spawn from 188-agency pool:                     │     │
-│  │  │    • backend-architect (API/server)              │     │
-│  │  │    • frontend-developer (UI/UX)                  │     │
-│  │  │    • devops-automator (deploy)                  │     │
-│  │  │    • ux-researcher (flows)                      │     │
-│  │  │    • etc.                                        │     │
-│  │  │  Parallel execution, continuous commits         │     │
+│  │  │  Spawn from 188-agency pool + scope-guardian     │     │
+│  │  │  Continuous scope protection during build       │     │
 │  │  ▼                                                   │     │
 │  │  Channel 5: AUDIT ─────────────────────────────────│     │
 │  │  │  Run audit-agent.py                              │     │
-│  │  │  Check: originality, functionality, requirements │     │
 │  │  ▼                                                   │     │
 │  │  Channel 6: DEMO SCRIPT ─────────────────────────────│     │
 │  │  │  Spawn: demo-script-writer                       │     │
-│  │  │  Create 3-5 min SaaS presentation script          │     │
 │  │  ▼                                                   │     │
-│  │  Channel 7: DEPLOY ────────────────────────────────│     │
+│  │  Channel 7: DEMO REHEARSAL ──────────────────────────│     │
+│  │  │  Spawn: demo-rehearsal (90s strict timing)       │     │
+│  │  ▼                                                   │     │
+│  │  Channel 8: SUBMISSION OPTIMIZATION ────────────────│     │
+│  │  │  Spawn: submission-optimizer (Devpost page)       │     │
+│  │  ▼                                                   │     │
+│  │  Channel 9: SPONSOR VALIDATION ──────────────────────│     │
+│  │  │  Spawn: sponsor-validator (creative usage)       │     │
+│  │  ▼                                                   │     │
+│  │  Channel 10: SCOPE GUARDIAN ─────────────────────────│     │
+│  │  │  Continuous during build (feature creep protection)│     │
+│  │  ▼                                                   │     │
+│  │  Channel 11: FINAL POLISH ───────────────────────────│     │
+│  │  │  Spawn: final-polish (2h before deadline)         │     │
+│  │  ▼                                                   │     │
+│  │  Channel 12: DEPLOY ───────────────────────────────│     │
 │  │     Build OCI image → Push to GHCR → VPS ready      │     │
 │  │                                                       │     │
 │  └─────────────────────────────────────────────────────────┘     │
@@ -131,12 +144,16 @@ Repeat winners don't out-code everyone. They build the most **judgeable** projec
 - Polished demo that feels real
 - Clear story with future potential
 
-1. **Research is Sacred (30+ min minimum)**
-   - Reverse-engineer the rubric FIRST
-   - Analyze juror psychographics
-   - Study past winners' patterns
-   - Design the 90-second demo flow BEFORE building
-   - Gemini for deep analysis, Brave for verification
+1. **PROBLEM DISCOVERY IS SACRED (40% of research time)**
+   - **The problem determines 80% of winning**
+   - Use Gemini Deep Research to find the RIGHT problem:
+     * What problems score highest on rubric?
+     * What problems do judges care about?
+     * What problems did past winners solve?
+     * Is this problem real and painful?
+   - Validate problem BEFORE proposing solutions
+   - Design 90-second demo flow BEFORE building
+   - Brave for existence checks only
 
 2. **Three Critics Debate (Winning Focus)**
    - Originality: "Will judges REMEMBER this?"
