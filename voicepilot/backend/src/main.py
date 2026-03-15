@@ -1,7 +1,8 @@
 """Main FastAPI application for VoicePilot."""
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 import logging
 import sys
 import json
@@ -38,6 +39,7 @@ logger = logging.getLogger(__name__)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 PORT = int(os.getenv("PORT", "8080"))
 HOST = os.getenv("HOST", "0.0.0.0")
+STATIC_PATH = os.getenv("STATIC_FILES_PATH", "/app/static")
 
 # Create FastAPI app
 app = FastAPI(
@@ -54,6 +56,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files (frontend)
+if os.path.exists(STATIC_PATH):
+    app.mount("/static", StaticFiles(directory=STATIC_PATH), name="static")
+    logger.info(f"Mounted static files from {STATIC_PATH}")
 
 # Health check endpoint
 @app.get("/health")
@@ -83,6 +90,19 @@ async def readiness_check():
             "gemini_configured": bool(GEMINI_API_KEY)
         }
     }
+
+# Serve frontend at root
+@app.get("/")
+async def serve_frontend():
+    """Serve the frontend HTML."""
+    index_path = os.path.join(STATIC_PATH, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return JSONResponse({
+        "message": "VoicePilot API is running",
+        "docs": "/docs",
+        "health": "/health"
+    })
 
 # WebSocket endpoint for voice sessions
 @app.websocket("/ws/voice")
