@@ -1,24 +1,23 @@
 # VoicePilot - Unified Container
 # Includes: Backend (FastAPI) + Frontend (React) + Demo Project
 
-FROM node:20-alpine AS frontend-builder
+# Use Debian-based image instead of Alpine for better ARM64 compatibility
+FROM node:20-bookworm AS frontend-builder
 
 WORKDIR /app/frontend
 COPY voicepilot/frontend/package*.json ./
-RUN npm ci
+
+# Add verbose logging and retry config for npm ci
+RUN npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-retries 5 && \
+    npm ci --verbose
 
 COPY voicepilot/frontend/ ./
 RUN npm run build
 
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm
 
 WORKDIR /app
-
-# Install Node.js for any runtime Node needs (optional)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
 
 # Backend setup
 COPY voicepilot/backend/requirements.txt ./
