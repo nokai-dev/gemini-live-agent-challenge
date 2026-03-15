@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .btn-primary {
+            background-color: #3B82F6;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2563EB;
+            transform: translateY(-2px);
+        }
+        
+        .features {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        footer {
+            background: #1f2937;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <h1>Welcome to VoicePilot</h1>
+        <p>Edit your code with voice commands and AI assistance</p>
+        <button class="btn-primary" id="cta-button">Get Started</button>
+    </section>
+
+    <section class="features">
+        <h2>Features</h2>
+        <div class="feature-grid">
+            <div class="feature-card" id="feature-1">
+                <h3>🎤 Voice Commands</h3>
+                <p>Control your code editor with natural voice commands. No keyboard needed.</p>
+            </div>
+            
+            <div class="feature-card" id="feature-2">
+                <h3>👁️ Screen Analysis</h3>
+                <p>AI analyzes your screen to understand context and make precise edits.</p>
+            </div>
+            
+            <div class="feature-card" id="feature-3">
+                <h3>⚡ Real-time Updates</h3>
+                <p>See changes instantly as you speak. No delays, just pure productivity.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Built with ❤️ for the Gemini Live API Challenge</p>
+    </footer>
+
+    <script>
+        // Demo script to show interactivity
+        document.getElementById('cta-button').addEventListener('click', function() {
+            alert('VoicePilot Demo - This would open the app!');
+        });
+    </script>
+</body>
+</html>
