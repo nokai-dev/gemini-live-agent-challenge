@@ -1,68 +1,77 @@
-# VoicePilot - Unified Container with Extensive Logging
-# Includes: Backend (FastAPI) + Frontend (React) + Demo Project
+# VoicePilot - Unified Node.js Container
+# Includes: Backend (Express + TypeScript) + Frontend (React + Vite)
 
+# Stage 1: Build Frontend
 FROM node:20-bookworm AS frontend-builder
 
 WORKDIR /app/frontend
 
-# Log Node version
-RUN echo "=== Node Version ===" && node -v && npm -v
-
+# Copy frontend package files
 COPY voicepilot/frontend/package*.json ./
-RUN echo "=== Package.json contents ===" && cat package.json
 
-# Add verbose logging and retry config for npm ci
-RUN echo "=== Starting npm ci ===" && \
-    npm config set fetch-retry-maxtimeout 120000 && \
-    npm config set fetch-retries 5 && \
-    npm ci --verbose 2>&1 | tee /tmp/npm-install.log && \
-    echo "=== npm ci completed ==="
+# Install frontend dependencies
+RUN npm ci
 
+# Copy frontend source code
 COPY voicepilot/frontend/ ./
-RUN echo "=== Building frontend ===" && \
-    npm run build 2>&1 | tee /tmp/npm-build.log && \
-    echo "=== Frontend build completed ===" && \
-    ls -la /app/frontend/dist/ && \
-    echo "=== Dist directory contents ==="
 
-FROM python:3.11-slim-bookworm
+# Build frontend (outputs to dist/renderer/)
+RUN npm run build:renderer
+
+# Stage 2: Build Backend
+FROM node:20-bookworm AS backend-builder
+
+WORKDIR /app/backend
+
+# Copy backend package files
+COPY voicepilot-backend/package*.json ./
+
+# Install backend dependencies (including devDependencies for build)
+RUN npm ci
+
+# Copy backend source code
+COPY voicepilot-backend/ ./
+
+# Build backend (TypeScript compilation)
+RUN npm run build
+
+# Stage 3: Production Image
+FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-# Log Python version
-RUN echo "=== Python Version ===" && python --version
+# Create non-root user for security
+RUN groupadd -r voicepilot && useradd -r -g voicepilot voicepilot
 
-# Backend setup
-COPY voicepilot/backend/requirements.txt ./
-RUN echo "=== Installing Python dependencies ===" && \
-    pip install --no-cache-dir -r requirements.txt 2>&1 | tee /tmp/pip-install.log && \
-    echo "=== Python dependencies installed ==="
+# Copy backend package files
+COPY voicepilot-backend/package*.json ./
 
-COPY voicepilot/backend/src/ ./backend/
+# Install production dependencies only
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Frontend static files
-# Copy renderer folder contents (the actual web frontend) to static root
-COPY --from=frontend-builder /app/frontend/dist/renderer/ ./static/
-RUN echo "=== Static files copied ===" && \
-    ls -la /app/static/ && \
-    echo "=== Static directory size ===" && \
-    du -sh /app/static/
+# Copy built backend from builder stage
+COPY --from=backend-builder /app/backend/dist/ ./dist/
 
-# Demo project
-COPY voicepilot/demo-project/ ./demo-project/
-RUN echo "=== Demo project copied ===" && \
-    ls -la /app/demo-project/
+# Copy built frontend from frontend builder stage
+# The frontend builds to dist/renderer/, we'll put it in public/ for serving
+COPY --from=frontend-builder /app/frontend/dist/renderer/ ./public/
 
-# Main application
-COPY voicepilot/backend/src/main.py ./
-RUN echo "=== Main.py copied ===" && \
-    ls -la /app/
+# Set proper ownership
+RUN chown -R voicepilot:voicepilot /app
 
+# Switch to non-root user
+USER voicepilot
+
+# Expose port 8080
 EXPOSE 8080
 
-ENV PYTHONUNBUFFERED=1
-ENV DEMO_PROJECT_PATH=/app/demo-project
-ENV STATIC_FILES_PATH=/app/static
-ENV LOG_LEVEL=DEBUG
+# Environment variables
+ENV NODE_ENV=production
+ENV PORT=8080
 
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--log-level", "debug"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8080/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
+
+# Start the backend server
+CMD ["node", "dist/server.js"]
