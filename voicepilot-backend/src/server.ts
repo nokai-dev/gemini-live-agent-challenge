@@ -299,8 +299,8 @@ app.get('/health', (_req: Request, res: Response) => {
 // API routes
 app.use('/api/analyze', analyzeRouter);
 
-// Root endpoint - API info
-app.get('/', (_req: Request, res: Response) => {
+// API info endpoint (moved to /api to not conflict with frontend)
+app.get('/api', (_req: Request, res: Response) => {
   res.json({
     name: 'VoicePilot Backend',
     description: 'AI-powered frontend development assistant',
@@ -319,6 +319,7 @@ app.get('/', (_req: Request, res: Response) => {
 
 // Serve static files from public directory (frontend build)
 // This serves the React/Vite frontend at all non-API routes
+// Must come BEFORE the SPA fallback catch-all
 app.use(express.static('public'));
 
 // SPA fallback: serve index.html for any non-API, non-static routes
