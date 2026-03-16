@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'voicepilot/**'
+      - 'voicepilot-backend/**'
       - '.github/workflows/build-oci.yml'
   workflow_dispatch:
 
