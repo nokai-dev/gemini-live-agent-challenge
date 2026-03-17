@@ -13,6 +13,8 @@ import { useAsyncOperation } from './hooks/useAsyncOperation';
 import { useKeyboardShortcuts, VOICEPILOT_SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { useSessionStorage } from './hooks/useSessionStorage';
 import { SessionHistory } from './components/SessionHistory';
+import { useBackendStatus } from './hooks/useBackendStatus';
+import { ConnectionStatus } from './components/ConnectionStatus';
 import './styles/main.css';
 
 type AppStatus = 'idle' | 'capturing' | 'recording' | 'processing' | 'ready' | 'applied';

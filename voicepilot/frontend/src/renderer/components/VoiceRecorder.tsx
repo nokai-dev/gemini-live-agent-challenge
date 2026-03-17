@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Mic, Square, Volume2 } from 'lucide-react';
 
 interface VoiceRecorderProps {
@@ -14,10 +14,16 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 }) => {
   const [audioLevel, setAudioLevel] = useState(0);
   const [transcript, setTranscript] = useState('');
+  
+  // Refs for cleanup
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const animationFrameRef = useRef<number>(0);
+  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const isRecordingRef = useRef(false);
 
   // Demo commands for quick testing
   const demoCommands = [
@@ -27,36 +33,125 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     'Make these cards a grid',
   ];
 
+  /**
+   * Clean up all resources
+   */
+  const cleanup = useCallback(() => {
+    // Cancel animation frame
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    // Clear timeout
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    // Stop media recorder and release tracks
+    if (mediaRecorderRef.current) {
+      if (mediaRecorderRef.current.state !== 'inactive') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (e) {
+          // Ignore errors if already stopped
+        }
+      }
+      // Release all tracks from the stream
+      mediaRecorderRef.current.stream?.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      mediaRecorderRef.current = null;
+    }
+
+    // Disconnect audio nodes
+    if (sourceRef.current) {
+      try {
+        sourceRef.current.disconnect();
+      } catch (e) {
+        // Ignore if already disconnected
+      }
+      sourceRef.current = null;
+    }
+
+    if (analyserRef.current) {
+      try {
+        analyserRef.current.disconnect();
+      } catch (e) {
+        // Ignore if already disconnected
+      }
+      analyserRef.current = null;
+    }
+
+    // Close audio context
+    if (audioContextRef.current) {
+      if (audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close().catch(() => {
+          // Ignore close errors
+        });
+      }
+      audioContextRef.current = null;
+    }
+
+    // Clear audio chunks
+    audioChunksRef.current = [];
+    isRecordingRef.current = false;
+    setAudioLevel(0);
+  }, []);
+
+  // Cleanup on unmount
   useEffect(() => {
-    if (isRecording) {
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
+
+  // Handle recording state changes
+  useEffect(() => {
+    if (isRecording && !isRecordingRef.current) {
+      isRecordingRef.current = true;
       startRecording();
-    } else {
+    } else if (!isRecording && isRecordingRef.current) {
       stopRecording();
     }
   }, [isRecording]);
 
   const startRecording = async () => {
     try {
+      // Clean up any existing resources first
+      cleanup();
+      
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
       // Set up audio analysis for visualization
       audioContextRef.current = new AudioContext();
       analyserRef.current = audioContextRef.current.createAnalyser();
-      const source = audioContextRef.current.createMediaStreamSource(stream);
-      source.connect(analyserRef.current);
       analyserRef.current.fftSize = 256;
       
+      sourceRef.current = audioContextRef.current.createMediaStreamSource(stream);
+      sourceRef.current.connect(analyserRef.current);
+      
       mediaRecorderRef.current = new MediaRecorder(stream);
-      const audioChunks: Blob[] = [];
+      audioChunksRef.current = [];
 
       mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunks.push(event.data);
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
 
       mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         // In a real app, send this to the backend
         console.log('Recording stopped, blob size:', audioBlob.size);
+        audioChunksRef.current = [];
+      };
+
+      mediaRecorderRef.current.onerror = (event) => {
+        console.error('MediaRecorder error:', event);
+        cleanup();
       };
 
       mediaRecorderRef.current.start();
@@ -65,32 +160,23 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       visualizeAudio();
       
       // For demo: simulate transcription after 2 seconds
-      setTimeout(() => {
-        const randomCommand = demoCommands[Math.floor(Math.random() * demoCommands.length)];
-        setTranscript(randomCommand);
-        onTranscription(randomCommand);
+      timeoutRef.current = setTimeout(() => {
+        if (isRecordingRef.current) {
+          const randomCommand = demoCommands[Math.floor(Math.random() * demoCommands.length)];
+          setTranscript(randomCommand);
+          onTranscription(randomCommand);
+        }
       }, 2000);
       
     } catch (error) {
       console.error('Failed to start recording:', error);
+      cleanup();
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-    }
-    
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-    }
-    
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    
-    setAudioLevel(0);
+    isRecordingRef.current = false;
+    cleanup();
   };
 
   const visualizeAudio = () => {
@@ -99,7 +185,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
     
     const updateLevel = () => {
-      if (!analyserRef.current) return;
+      if (!analyserRef.current || !isRecordingRef.current) return;
       
       analyserRef.current.getByteFrequencyData(dataArray);
       const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
@@ -196,3 +282,5 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     </div>
   );
 };
+
+export default VoiceRecorder;
