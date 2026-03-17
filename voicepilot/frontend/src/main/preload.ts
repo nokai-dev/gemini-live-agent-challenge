@@ -12,6 +12,7 @@ interface ElectronAPI {
   applyChange: (data: { targetFile: string; codeChange: { before: string; after: string } }) => Promise<{ success: boolean; error?: string }>;
   getDemoFiles: () => Promise<{ success: boolean; files?: any[]; error?: string }>;
   getFileContent: (filePath: string) => Promise<{ success: boolean; content?: string; error?: string }>;
+  checkBackendHealth: () => Promise<{ isHealthy: boolean; url: string }>;
 }
 
 const api: ElectronAPI = {
@@ -21,6 +22,7 @@ const api: ElectronAPI = {
   applyChange: (data) => ipcRenderer.invoke('apply-change', data),
   getDemoFiles: () => ipcRenderer.invoke('get-demo-files'),
   getFileContent: (filePath: string) => ipcRenderer.invoke('get-file-content', filePath),
+  checkBackendHealth: () => ipcRenderer.invoke('check-backend-health'),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

@@ -10,6 +10,7 @@ export interface ElectronAPI {
   applyChange: (data: { targetFile: string; codeChange: { before: string; after: string } }) => Promise<{ success: boolean; error?: string }>;
   getDemoFiles: () => Promise<{ success: boolean; files?: any[]; error?: string }>;
   getFileContent: (filePath: string) => Promise<{ success: boolean; content?: string; error?: string }>;
+  checkBackendHealth: () => Promise<{ isHealthy: boolean; url: string }>;
 }
 
 declare global {

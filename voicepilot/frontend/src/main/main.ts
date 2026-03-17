@@ -6,6 +6,7 @@ let mainWindow: BrowserWindow | null = null;
 let previewWindow: BrowserWindow | null = null;
 
 const DEMO_PROJECT_PATH = path.join(__dirname, '../../demo-project');
+const API_BASE_URL = process.env.VOICEPILOT_API_URL || 'http://localhost:8080';
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
@@ -71,6 +72,35 @@ app.on('window-all-closed', () => {
   }
 });
 
+// API Client for backend communication
+async function healthCheck(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`, { method: 'GET' });
+    if (response.ok) {
+      const data = await response.json();
+      return data.status === 'healthy';
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+async function callBackendAPI(endpoint: string, body: unknown): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+    throw new Error(error.message || error.error || `HTTP ${response.status}`);
+  }
+  
+  return response.json();
+}
+
 // IPC handlers
 
 // Get available screen sources
@@ -97,7 +127,7 @@ ipcMain.handle('capture-screen', async (event, sourceId: string) => {
   }
 });
 
-// Analyze command (mock)
+// Analyze command - tries backend API first, falls back to mock
 ipcMain.handle('analyze-command', async (event, data: {
   screenshot: string;
   audio: string;
@@ -105,6 +135,61 @@ ipcMain.handle('analyze-command', async (event, data: {
   command: string;
 }) => {
   const cmd = data.command.toLowerCase();
+  
+  // Try backend API first
+  try {
+    const isBackendHealthy = await healthCheck();
+    if (isBackendHealthy) {
+      console.log('Using backend API for analyze-command');
+      
+      // Map command to demo type for backend
+      let demoType: string | null = null;
+      if (cmd.includes('button') && cmd.includes('blue')) demoType = 'button-blue';
+      else if (cmd.includes('padding')) demoType = 'card-padding';
+      else if (cmd.includes('font') && cmd.includes('bigger')) demoType = 'text-bigger';
+      else if (cmd.includes('grid') || (cmd.includes('cards') && cmd.includes('layout'))) demoType = 'grid-layout';
+      
+      if (demoType) {
+        // Use demo endpoint for known commands
+        const result = await callBackendAPI('/api/analyze/demo', { demoType });
+        return {
+          success: true,
+          targetFile: result.targetFile,
+          description: result.description,
+          codeChange: {
+            before: `// ${result.element} - before`,
+            after: result.codeChange,
+          },
+          fullBefore: `// ${result.targetFile}\n// Element: ${result.element}\n// Intent: ${result.intent}\n\n${result.codeChange}`,
+          fullAfter: `// ${result.targetFile}\n// Element: ${result.element}\n// Intent: ${result.intent}\n// Confidence: ${result.confidence}\n\n${result.codeChange}`,
+        };
+      }
+      
+      // For unknown commands, use the analyze endpoint
+      const result = await callBackendAPI('/api/analyze', {
+        screenshot: data.screenshot,
+        audio: data.audio,
+        selection: data.selection,
+      });
+      
+      return {
+        success: true,
+        targetFile: result.targetFile,
+        description: result.description,
+        codeChange: {
+          before: `// ${result.element} - before`,
+          after: result.codeChange,
+        },
+        fullBefore: `// ${result.targetFile}\n// Element: ${result.element}\n// Intent: ${result.intent}\n\n${result.codeChange}`,
+        fullAfter: `// ${result.targetFile}\n// Element: ${result.element}\n// Intent: ${result.intent}\n// Confidence: ${result.confidence}\n\n${result.codeChange}`,
+      };
+    }
+  } catch (err) {
+    console.warn('Backend API failed, falling back to mock:', err);
+  }
+  
+  // Fallback to mock implementation
+  console.log('Using mock implementation for analyze-command');
   
   // Demo command 1: "Make this button blue"
   if (cmd.includes('button') && cmd.includes('blue')) {
@@ -182,11 +267,28 @@ ipcMain.handle('analyze-command', async (event, data: {
   };
 });
 
-// Apply code change
+// Apply code change - tries backend API first, falls back to local file system
 ipcMain.handle('apply-change', async (event, data: {
   targetFile: string;
   codeChange: { before: string; after: string };
 }) => {
+  // Try backend API first
+  try {
+    const isBackendHealthy = await healthCheck();
+    if (isBackendHealthy) {
+      console.log('Using backend API for apply-change');
+      const result = await callBackendAPI('/api/analyze/apply', {
+        filePath: data.targetFile,
+        codeChange: data.codeChange.after,
+      });
+      return result;
+    }
+  } catch (err) {
+    console.warn('Backend API failed, falling back to local file system:', err);
+  }
+  
+  // Fallback to local file system
+  console.log('Using local file system for apply-change');
   try {
     const filePath = path.join(DEMO_PROJECT_PATH, data.targetFile);
     let content = fs.readFileSync(filePath, 'utf-8');
@@ -243,3 +345,9 @@ async function getFileContent(fileName: string): Promise<string> {
   }
   return '';
 }
+
+// New IPC handler: Check backend health
+ipcMain.handle('check-backend-health', async () => {
+  const isHealthy = await healthCheck();
+  return { isHealthy, url: API_BASE_URL };
+});
