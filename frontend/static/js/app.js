@@ -23,10 +23,20 @@ class FocusCompanionApp {
         this.lastScreenAnalysis = null;
         this.screenAnalysisInterval = null;
         this.focusState = 'unknown'; // 'focused', 'distracted', 'unknown'
+        
+        // Adaptive capture config - optimized for bandwidth
+        // Lower quality when focused (less critical), higher when distracted (need detail)
         this.captureConfig = {
-            focused: { interval: 60000, quality: 0.5 },    // Every 60s when focused
-            distracted: { interval: 10000, quality: 0.8 }, // Every 10s when distracted
-            normal: { interval: 30000, quality: 0.7 }      // Every 30s default
+            focused: { interval: 60000, quality: 0.3 },    // Every 60s, 30% quality (saves bandwidth)
+            distracted: { interval: 10000, quality: 0.6 }, // Every 10s, 60% quality (need clarity)
+            normal: { interval: 30000, quality: 0.5 }       // Every 30s, 50% quality (balanced)
+        };
+        
+        // Track compression stats
+        this.compressionStats = {
+            captures: 0,
+            totalOriginalSize: 0,
+            totalCompressedSize: 0
         };
         
         // Bind UI elements
@@ -384,6 +394,19 @@ class FocusCompanionApp {
     
     async sendScreenAnalysis(imageData) {
         if (!this.isConnected) return;
+        
+        // Track compression stats
+        const estimatedOriginal = (1280 * 720 * 3) / 1024; // ~2.6MB uncompressed
+        const compressedSize = (imageData.length * 0.75) / 1024;
+        this.compressionStats.captures++;
+        this.compressionStats.totalOriginalSize += estimatedOriginal;
+        this.compressionStats.totalCompressedSize += compressedSize;
+        
+        // Log stats every 10 captures
+        if (this.compressionStats.captures % 10 === 0) {
+            const avgSavings = ((this.compressionStats.totalOriginalSize - this.compressionStats.totalCompressedSize) / this.compressionStats.totalOriginalSize * 100).toFixed(1);
+            console.log(`📊 Compression stats: ${this.compressionStats.captures} captures, ~${avgSavings}% avg savings`);
+        }
         
         // Send screen data to server for analysis
         this.wsClient.send('screen_analysis', {

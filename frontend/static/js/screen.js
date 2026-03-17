@@ -88,7 +88,7 @@ class ScreenCapture {
     }
     
     /**
-     * Capture a screenshot
+     * Capture a screenshot with adaptive compression
      * @param {number} quality - JPEG quality (0.0 to 1.0)
      * @returns {string|null} - Base64 encoded image or null
      */
@@ -124,6 +124,12 @@ class ScreenCapture {
             
             // Remove data URL prefix for transmission
             const base64Data = imageData.replace(/^data:image\/jpeg;base64,/, '');
+            
+            // Log compression stats
+            const originalSize = (width * height * 3) / 1024; // Rough KB estimate
+            const compressedSize = (base64Data.length * 0.75) / 1024; // Base64 is ~4/3 of binary
+            const savings = ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
+            console.log(`Screen capture: ${width}x${height}, quality=${quality.toFixed(2)}, ~${compressedSize.toFixed(0)}KB (${savings}% savings)`);
             
             // Trigger callback
             if (this.onCapture) {
@@ -239,6 +245,54 @@ class ScreenCapture {
         const pixels = this.video.videoWidth * this.video.videoHeight;
         const compressionRatio = 1 - (quality * 0.8); // Higher quality = less compression
         return Math.floor(pixels * 3 * compressionRatio);
+    }
+    
+    /**
+     * Compress an existing base64 image
+     * @param {string} base64Data - Original base64 image data
+     * @param {number} quality - Target quality (0.1 to 1.0)
+     * @param {number} maxDimension - Maximum width or height
+     * @returns {Promise<string>} - Compressed base64 image
+     */
+    async compressImage(base64Data, quality = 0.5, maxDimension = 1280) {
+        return new Promise((resolve, reject) => {
+            try {
+                const img = new Image();
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Scale down if too large
+                    if (width > maxDimension || height > maxDimension) {
+                        const scale = Math.min(maxDimension / width, maxDimension / height);
+                        width = Math.floor(width * scale);
+                        height = Math.floor(height * scale);
+                    }
+                    
+                    // Create temp canvas for compression
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = width;
+                    tempCanvas.height = height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    
+                    // Draw and compress
+                    tempCtx.drawImage(img, 0, 0, width, height);
+                    const compressed = tempCanvas.toDataURL('image/jpeg', quality);
+                    
+                    // Calculate savings
+                    const originalSize = (base64Data.length * 0.75) / 1024;
+                    const newSize = (compressed.length * 0.75) / 1024;
+                    console.log(`Image compressed: ${originalSize.toFixed(0)}KB → ${newSize.toFixed(0)}KB (${((1 - newSize/originalSize) * 100).toFixed(1)}% reduction)`);
+                    
+                    resolve(compressed.replace(/^data:image\/jpeg;base64,/, ''));
+                };
+                img.onerror = reject;
+                img.src = 'data:image/jpeg;base64,' + base64Data;
+            } catch (error) {
+                console.error('Compression failed, using original:', error);
+                resolve(base64Data); // Fallback to original
+            }
+        });
     }
 }
 
