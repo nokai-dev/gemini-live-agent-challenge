@@ -15,6 +15,7 @@ import { useSessionStorage } from './hooks/useSessionStorage';
 import { SessionHistory } from './components/SessionHistory';
 import { useBackendStatus } from './hooks/useBackendStatus';
 import { ConnectionStatus, ConnectionStatusDot, OfflineBanner } from './components/ConnectionStatus';
+import { ErrorDisplay, getErrorType, getFriendlyErrorMessage } from './components/ErrorDisplay';
 import './styles/main.css';
 
 type AppStatus = 'idle' | 'capturing' | 'recording' | 'processing' | 'ready' | 'applied';
@@ -417,6 +418,26 @@ function App() {
                     <p className="text-sm text-slate-600 mb-1">Command understood:</p>
                     <p className="text-lg font-medium text-blue-700">"{transcription}"</p>
                   </div>
+
+                  {/* Error Display */}
+                  {(analyzeCommandOp.error || applyChangeOp.error) && (
+                    <ErrorDisplay
+                      error={analyzeCommandOp.error?.message || applyChangeOp.error?.message || 'An error occurred'}
+                      errorType={getErrorType(analyzeCommandOp.error?.message || applyChangeOp.error?.message || '')}
+                      onRetry={() => {
+                        if (analyzeCommandOp.error) {
+                          analyzeCommandOp.retry();
+                        } else if (applyChangeOp.error) {
+                          applyChangeOp.retry();
+                        }
+                      }}
+                      onDismiss={() => {
+                        analyzeCommandOp.reset();
+                        applyChangeOp.reset();
+                      }}
+                      className="mb-4"
+                    />
+                  )}
 
                   <div className="mb-4 p-3 bg-slate-50 rounded-lg">
                     <p className="text-sm text-slate-600">
