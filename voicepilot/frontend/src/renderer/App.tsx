@@ -329,12 +329,9 @@ function App() {
                 <Keyboard className="w-4 h-4" />
                 Shortcuts
               </button>
-              <ConnectionStatus
+              <ConnectionStatusDot
                 status={backendStatus.status}
-                latency={backendStatus.latency}
-                lastChecked={backendStatus.lastChecked}
-                error={backendStatus.error}
-                onRefresh={backendStatus.refresh}
+                onClick={backendStatus.checkNow}
               />
               <StatusIndicator status={status} />
             </div>
