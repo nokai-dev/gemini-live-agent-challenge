@@ -11,6 +11,8 @@ import { LoadingOverlay } from './components/LoadingSpinner';
 import { useToast } from './components/Toast';
 import { useAsyncOperation } from './hooks/useAsyncOperation';
 import { useKeyboardShortcuts, VOICEPILOT_SHORTCUTS } from './hooks/useKeyboardShortcuts';
+import { useSessionStorage } from './hooks/useSessionStorage';
+import { SessionHistory } from './components/SessionHistory';
 import './styles/main.css';
 
 type AppStatus = 'idle' | 'capturing' | 'recording' | 'processing' | 'ready' | 'applied';
@@ -45,6 +47,19 @@ function App() {
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   const { success, error, ToastContainer } = useToast();
+
+  // Session persistence
+  const {
+    entries: sessionEntries,
+    startSession,
+    updateSession,
+    failSession,
+    replaySession,
+    deleteSession,
+    clearAllSessions,
+    exportSessions,
+    importSessions,
+  } = useSessionStorage();
 
   // Async operation hooks with retry logic
   const analyzeCommandOp = useAsyncOperation(
@@ -112,6 +127,13 @@ function App() {
       return;
     }
     
+    // Start a new session
+    const sessionId = startSession({
+      command,
+      screenshot,
+      selection,
+    });
+    
     setStatus('processing');
     
     const result = await analyzeCommandOp.execute({
@@ -124,8 +146,17 @@ function App() {
     if (result) {
       setAnalysisResult(result);
       setStatus('ready');
+      // Update session with results
+      updateSession(sessionId, {
+        targetFile: result.targetFile,
+        description: result.description,
+        codeChange: result.codeChange,
+        status: 'completed',
+      });
     } else {
       setStatus('idle');
+      // Mark session as failed
+      failSession(sessionId, analyzeCommandOp.error?.message || 'Analysis failed');
     }
   };
 
@@ -142,6 +173,7 @@ function App() {
     if (result?.success) {
       setStatus('applied');
       setFileRefreshTrigger(prev => prev + 1);
+      success('Changes applied successfully!');
       setTimeout(() => {
         setStatus('idle');
         setAnalysisResult(null);
@@ -149,6 +181,7 @@ function App() {
       }, 3000);
     } else {
       setStatus('ready');
+      error(`Failed to apply changes: ${applyChangeOp.error?.message || 'Unknown error'}`);
     }
   };
 
@@ -410,6 +443,32 @@ function App() {
 
         {/* Toast Notifications */}
         <ToastContainer />
+
+        {/* Session History Panel */}
+        <SessionHistory
+          entries={sessionEntries}
+          onReplay={(id) => {
+            const session = replaySession(id);
+            if (session) {
+              setScreenshot(session.screenshot);
+              setSelection(session.selection);
+              setTranscription(session.command);
+              setAnalysisResult({
+                targetFile: session.targetFile,
+                description: session.description,
+                codeChange: session.codeChange,
+                fullBefore: session.codeChange.before,
+                fullAfter: session.codeChange.after,
+              });
+              setStatus('ready');
+              success('Session replayed!');
+            }
+          }}
+          onDelete={deleteSession}
+          onClear={clearAllSessions}
+          onExport={exportSessions}
+          onImport={importSessions}
+        />
       </div>
     </ErrorBoundary>
   );
