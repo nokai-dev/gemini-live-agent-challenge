@@ -8,6 +8,132 @@ let previewWindow: BrowserWindow | null = null;
 const DEMO_PROJECT_PATH = path.join(__dirname, '../../demo-project');
 const API_BASE_URL = process.env.VOICEPILOT_API_URL || 'http://localhost:8080';
 
+// Allowed file extensions for code changes
+const ALLOWED_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.css', '.html', '.json'];
+
+// Maximum file path length
+const MAX_PATH_LENGTH = 255;
+
+// Maximum command length
+const MAX_COMMAND_LENGTH = 1000;
+
+/**
+ * Validate file path to prevent directory traversal attacks
+ * Returns { isValid, error, sanitizedPath }
+ */
+function validateFilePath(filePath: string): { isValid: boolean; error?: string; sanitizedPath?: string } {
+  // Check if path is empty
+  if (!filePath || filePath.trim().length === 0) {
+    return { isValid: false, error: 'File path is required' };
+  }
+
+  // Check path length
+  if (filePath.length > MAX_PATH_LENGTH) {
+    return { isValid: false, error: `File path exceeds maximum length of ${MAX_PATH_LENGTH} characters` };
+  }
+
+  // Check for null bytes
+  if (filePath.includes('\0')) {
+    return { isValid: false, error: 'File path contains invalid characters' };
+  }
+
+  // Normalize the path and get the basename
+  const normalizedPath = path.normalize(filePath);
+  const basename = path.basename(normalizedPath);
+
+  // Check for directory traversal attempts
+  if (normalizedPath.startsWith('..') || normalizedPath.includes('../') || normalizedPath.includes('..\\')) {
+    return { isValid: false, error: 'Directory traversal is not allowed' };
+  }
+
+  // Check for absolute paths
+  if (path.isAbsolute(normalizedPath)) {
+    return { isValid: false, error: 'Absolute paths are not allowed' };
+  }
+
+  // Check file extension
+  const ext = path.extname(basename).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    return { isValid: false, error: `File extension '${ext}' is not allowed. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}` };
+  }
+
+  // Check for valid filename characters
+  const invalidChars = /[<>:"|?*\x00-\x1f]/;
+  if (invalidChars.test(basename)) {
+    return { isValid: false, error: 'File path contains invalid characters' };
+  }
+
+  // Ensure the resolved path is within the demo project
+  const fullPath = path.join(DEMO_PROJECT_PATH, basename);
+  const resolvedPath = path.resolve(fullPath);
+  const resolvedDemoPath = path.resolve(DEMO_PROJECT_PATH);
+  
+  if (!resolvedPath.startsWith(resolvedDemoPath)) {
+    return { isValid: false, error: 'File path is outside the allowed directory' };
+  }
+
+  return { isValid: true, sanitizedPath: basename };
+}
+
+/**
+ * Validate command input
+ */
+function validateCommand(command: string): { isValid: boolean; error?: string; sanitizedCommand?: string } {
+  // Check if command is empty
+  if (!command || command.trim().length === 0) {
+    return { isValid: false, error: 'Command is required' };
+  }
+
+  // Check command length
+  if (command.length > MAX_COMMAND_LENGTH) {
+    return { isValid: false, error: `Command exceeds maximum length of ${MAX_COMMAND_LENGTH} characters` };
+  }
+
+  // Check for null bytes
+  if (command.includes('\0')) {
+    return { isValid: false, error: 'Command contains invalid characters' };
+  }
+
+  // Basic XSS prevention - check for script tags
+  const xssPattern = /<(script|iframe|object|embed|form)[\s\S]*?>/i;
+  if (xssPattern.test(command)) {
+    return { isValid: false, error: 'Command contains potentially dangerous content' };
+  }
+
+  // Sanitize the command (trim whitespace)
+  const sanitizedCommand = command.trim();
+
+  return { isValid: true, sanitizedCommand };
+}
+
+/**
+ * Validate code change content
+ */
+function validateCodeChange(codeChange: { before: string; after: string }): { isValid: boolean; error?: string } {
+  // Check if code change is provided
+  if (!codeChange) {
+    return { isValid: false, error: 'Code change is required' };
+  }
+
+  // Check before/after strings
+  if (typeof codeChange.before !== 'string' || typeof codeChange.after !== 'string') {
+    return { isValid: false, error: 'Invalid code change format' };
+  }
+
+  // Check for excessive length (prevent memory issues)
+  const MAX_CODE_LENGTH = 100000; // 100KB
+  if (codeChange.before.length > MAX_CODE_LENGTH || codeChange.after.length > MAX_CODE_LENGTH) {
+    return { isValid: false, error: 'Code change exceeds maximum size' };
+  }
+
+  // Check for null bytes
+  if (codeChange.before.includes('\0') || codeChange.after.includes('\0')) {
+    return { isValid: false, error: 'Code change contains invalid characters' };
+  }
+
+  return { isValid: true };
+}
+
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -134,7 +260,14 @@ ipcMain.handle('analyze-command', async (event, data: {
   selection: { x: number; y: number; width: number; height: number } | null;
   command: string;
 }) => {
-  const cmd = data.command.toLowerCase();
+  // Validate command input
+  const commandValidation = validateCommand(data.command);
+  if (!commandValidation.isValid) {
+    console.error('Command validation failed:', commandValidation.error);
+    return { success: false, error: commandValidation.error };
+  }
+
+  const cmd = commandValidation.sanitizedCommand!.toLowerCase();
   
   // Try backend API first
   try {
@@ -272,13 +405,29 @@ ipcMain.handle('apply-change', async (event, data: {
   targetFile: string;
   codeChange: { before: string; after: string };
 }) => {
+  // Validate file path
+  const pathValidation = validateFilePath(data.targetFile);
+  if (!pathValidation.isValid) {
+    console.error('File path validation failed:', pathValidation.error);
+    return { success: false, error: pathValidation.error };
+  }
+
+  // Validate code change
+  const codeValidation = validateCodeChange(data.codeChange);
+  if (!codeValidation.isValid) {
+    console.error('Code change validation failed:', codeValidation.error);
+    return { success: false, error: codeValidation.error };
+  }
+
+  const sanitizedFileName = pathValidation.sanitizedPath!;
+
   // Try backend API first
   try {
     const isBackendHealthy = await healthCheck();
     if (isBackendHealthy) {
       console.log('Using backend API for apply-change');
       const result = await callBackendAPI('/api/analyze/apply', {
-        filePath: data.targetFile,
+        filePath: sanitizedFileName,
         codeChange: data.codeChange.after,
       });
       return result;
@@ -290,17 +439,31 @@ ipcMain.handle('apply-change', async (event, data: {
   // Fallback to local file system
   console.log('Using local file system for apply-change');
   try {
-    const filePath = path.join(DEMO_PROJECT_PATH, data.targetFile);
+    const filePath = path.join(DEMO_PROJECT_PATH, sanitizedFileName);
+    
+    // Double-check the resolved path is still within demo project
+    const resolvedPath = path.resolve(filePath);
+    const resolvedDemoPath = path.resolve(DEMO_PROJECT_PATH);
+    if (!resolvedPath.startsWith(resolvedDemoPath)) {
+      return { success: false, error: 'Security violation: Path traversal detected' };
+    }
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return { success: false, error: `File not found: ${sanitizedFileName}` };
+    }
+    
     let content = fs.readFileSync(filePath, 'utf-8');
     
     if (content.includes(data.codeChange.before)) {
       content = content.replace(data.codeChange.before, data.codeChange.after);
       fs.writeFileSync(filePath, content, 'utf-8');
-      return { success: true };
+      return { success: true, message: `Changes applied to ${sanitizedFileName}` };
     } else {
       return { success: false, error: 'Could not find the code to replace' };
     }
   } catch (error) {
+    console.error('Error applying change:', error);
     return { success: false, error: (error as Error).message };
   }
 });
