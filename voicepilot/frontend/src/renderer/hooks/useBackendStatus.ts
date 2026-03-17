@@ -1,141 +1,161 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-export type BackendStatus = 'online' | 'offline' | 'checking' | 'error';
+export type BackendStatus = 'online' | 'offline' | 'checking';
 
 export interface BackendStatusState {
   status: BackendStatus;
+  isOnline: boolean;
   lastChecked: Date | null;
-  latency: number | null;
   error: string | null;
+  url: string;
 }
 
 export interface UseBackendStatusOptions {
-  url?: string;
-  interval?: number; // milliseconds
-  timeout?: number; // milliseconds
-  onStatusChange?: (status: BackendStatus) => void;
+  pollInterval?: number; // milliseconds
+  onStatusChange?: (status: BackendStatus, previousStatus: BackendStatus) => void;
+  onOffline?: () => void;
+  onOnline?: () => void;
 }
 
-const DEFAULT_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
-const DEFAULT_INTERVAL = 30000; // 30 seconds
-const DEFAULT_TIMEOUT = 5000; // 5 seconds
+const DEFAULT_POLL_INTERVAL = 10000; // 10 seconds
+const API_BASE_URL = process.env.VOICEPILOT_API_URL || 'http://localhost:8080';
 
 /**
- * Hook for monitoring backend connectivity
- * Polls the /health endpoint and provides offline mode detection
+ * Custom hook for monitoring backend availability
+ * Polls the /health endpoint and provides offline/online status
  */
 export function useBackendStatus(options: UseBackendStatusOptions = {}) {
   const {
-    url = DEFAULT_URL,
-    interval = DEFAULT_INTERVAL,
-    timeout = DEFAULT_TIMEOUT,
+    pollInterval = DEFAULT_POLL_INTERVAL,
     onStatusChange,
+    onOffline,
+    onOnline,
   } = options;
 
   const [state, setState] = useState<BackendStatusState>({
     status: 'checking',
+    isOnline: false,
     lastChecked: null,
-    latency: null,
     error: null,
+    url: API_BASE_URL,
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const previousStatusRef = useRef<BackendStatus>('checking');
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const checkHealth = useCallback(async () => {
+  /**
+   * Check backend health
+   */
+  const checkHealth = useCallback(async (): Promise<boolean> => {
     // Cancel any pending request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
     abortControllerRef.current = new AbortController();
-    const startTime = performance.now();
+    const { signal } = abortControllerRef.current;
 
     try {
-      const response = await fetch(`${url}/health`, {
+      const response = await fetch(`${API_BASE_URL}/health`, {
         method: 'GET',
-        signal: abortControllerRef.current.signal,
         headers: {
-          'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
+        signal,
+        // Short timeout for health checks
+        cache: 'no-store',
       });
 
-      const latency = Math.round(performance.now() - startTime);
+      if (signal.aborted) {
+        return false;
+      }
 
       if (response.ok) {
         const data = await response.json();
-        const isHealthy = data.status === 'healthy' || data.status === 'ok';
-        
-        const newStatus: BackendStatus = isHealthy ? 'online' : 'error';
-        
-        setState({
-          status: newStatus,
-          lastChecked: new Date(),
-          latency,
-          error: isHealthy ? null : 'Backend reported unhealthy status',
-        });
-
-        // Notify on status change
-        if (previousStatusRef.current !== newStatus && onStatusChange) {
-          onStatusChange(newStatus);
-        }
-        previousStatusRef.current = newStatus;
-      } else {
-        throw new Error(`HTTP ${response.status}`);
+        return data.status === 'healthy';
       }
+
+      return false;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const isOffline = errorMessage.includes('fetch') || 
-                       errorMessage.includes('network') ||
-                       errorMessage.includes('Failed to fetch');
-
-      const newStatus: BackendStatus = isOffline ? 'offline' : 'error';
-
-      setState({
-        status: newStatus,
-        lastChecked: new Date(),
-        latency: null,
-        error: errorMessage,
-      });
-
-      // Notify on status change
-      if (previousStatusRef.current !== newStatus && onStatusChange) {
-        onStatusChange(newStatus);
+      if (error instanceof Error && error.name === 'AbortError') {
+        return false;
       }
-      previousStatusRef.current = newStatus;
+      return false;
     }
-  }, [url, onStatusChange]);
+  }, []);
 
-  // Initial check and interval polling
+  /**
+   * Perform a health check and update state
+   */
+  const performCheck = useCallback(async () => {
+    setState(prev => ({ ...prev, status: 'checking' }));
+
+    const isHealthy = await checkHealth();
+    const newStatus: BackendStatus = isHealthy ? 'online' : 'offline';
+    const previousStatus = previousStatusRef.current;
+
+    setState(prev => ({
+      ...prev,
+      status: newStatus,
+      isOnline: isHealthy,
+      lastChecked: new Date(),
+      error: isHealthy ? null : 'Backend is not responding',
+    }));
+
+    // Trigger callbacks if status changed
+    if (previousStatus !== newStatus) {
+      onStatusChange?.(newStatus, previousStatus);
+
+      if (newStatus === 'offline' && previousStatus === 'online') {
+        onOffline?.();
+      } else if (newStatus === 'online' && previousStatus === 'offline') {
+        onOnline?.();
+      }
+    }
+
+    previousStatusRef.current = newStatus;
+  }, [checkHealth, onStatusChange, onOffline, onOnline]);
+
+  /**
+   * Manually trigger a health check
+   */
+  const checkNow = useCallback(async () => {
+    await performCheck();
+  }, [performCheck]);
+
+  // Set up polling
   useEffect(() => {
-    // Check immediately on mount
-    checkHealth();
+    // Initial check
+    performCheck();
 
-    // Set up interval polling
-    const intervalId = setInterval(checkHealth, interval);
+    // Set up interval
+    intervalRef.current = setInterval(performCheck, pollInterval);
 
-    // Cleanup
     return () => {
-      clearInterval(intervalId);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, [performCheck, pollInterval]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [checkHealth, interval]);
-
-  // Manual refresh function
-  const refresh = useCallback(async () => {
-    setState(prev => ({ ...prev, status: 'checking' }));
-    await checkHealth();
-  }, [checkHealth]);
+  }, []);
 
   return {
     ...state,
-    isOnline: state.status === 'online',
-    isOffline: state.status === 'offline',
-    isChecking: state.status === 'checking',
-    hasError: state.status === 'error',
-    refresh,
+    checkNow,
   };
 }
 

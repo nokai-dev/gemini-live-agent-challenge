@@ -14,7 +14,7 @@ import { useKeyboardShortcuts, VOICEPILOT_SHORTCUTS } from './hooks/useKeyboardS
 import { useSessionStorage } from './hooks/useSessionStorage';
 import { SessionHistory } from './components/SessionHistory';
 import { useBackendStatus } from './hooks/useBackendStatus';
-import { ConnectionStatus } from './components/ConnectionStatus';
+import { ConnectionStatus, ConnectionStatusDot, OfflineBanner } from './components/ConnectionStatus';
 import './styles/main.css';
 
 type AppStatus = 'idle' | 'capturing' | 'recording' | 'processing' | 'ready' | 'applied';
@@ -62,6 +62,18 @@ function App() {
     exportSessions,
     importSessions,
   } = useSessionStorage();
+
+  // Backend connectivity monitoring
+  const backendStatus = useBackendStatus({
+    interval: 30000, // Check every 30 seconds
+    onStatusChange: (status) => {
+      if (status === 'offline') {
+        error('Backend is offline. Running in demo mode.');
+      } else if (status === 'online') {
+        success('Backend connection restored!');
+      }
+    },
+  });
 
   // Async operation hooks with retry logic
   const analyzeCommandOp = useAsyncOperation(
@@ -239,10 +251,22 @@ function App() {
   }, [showShortcuts]);
 
   const isLoading = analyzeCommandOp.loading || applyChangeOp.loading;
+  const isOffline = backendStatus.status === 'offline';
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-900">
+      <div className={`min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-900 ${isOffline ? 'pt-16' : ''}`}>
+        {/* Offline Banner */}
+        {isOffline && (
+          <OfflineBanner
+            onRetry={backendStatus.checkNow}
+            onSwitchToDemo={() => {
+              // Already in demo mode via backend fallback
+              success('Running in demo mode');
+            }}
+          />
+        )}
+
         {/* Loading Overlay */}
         <LoadingOverlay 
           isVisible={isLoading} 
@@ -305,6 +329,13 @@ function App() {
                 <Keyboard className="w-4 h-4" />
                 Shortcuts
               </button>
+              <ConnectionStatus
+                status={backendStatus.status}
+                latency={backendStatus.latency}
+                lastChecked={backendStatus.lastChecked}
+                error={backendStatus.error}
+                onRefresh={backendStatus.refresh}
+              />
               <StatusIndicator status={status} />
             </div>
           </div>
@@ -427,6 +458,13 @@ function App() {
               <DemoProject 
                 key={fileRefreshTrigger}
                 onFileChange={() => {}}
+              />
+
+              {/* Session History */}
+              <SessionHistory
+                entries={sessionEntries}
+                onReplay={replaySession}
+                maxItems={10}
               />
             </div>
           </div>
