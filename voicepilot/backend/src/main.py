@@ -1,13 +1,17 @@
 """Main FastAPI application for VoicePilot with extensive logging."""
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field, validator
 import logging
 import sys
 import json
 import os
-from typing import Optional
+import time
+import hashlib
+from typing import Optional, Dict, List, Tuple
+from functools import wraps
 
 # Configure detailed logging
 logging.basicConfig(
@@ -230,6 +234,170 @@ async def get_project_state():
     }
 
 logger.info("VoicePilot initialization complete")
+
+# Pydantic models for request validation
+class CodeModificationRequest(BaseModel):
+    """Request model for code modification API."""
+    file: str = Field(default="LandingPage.jsx", min_length=1, max_length=255, pattern=r"^[a-zA-Z0-9_\-\.\s\/]+")
+    component: str = Field(default="Button", min_length=1, max_length=100)
+    property: str = Field(default="backgroundColor", min_length=1, max_length=100)
+    value: str = Field(default="#3B82F6", min_length=1, max_length=1000)
+    
+    @validator('file')
+    def validate_file_path(cls, v):
+        """Validate file path to prevent directory traversal."""
+        # Reject paths with traversal sequences
+        if '..' in v or '~' in v or v.startswith('/') or v.startswith('\\'):
+            raise ValueError('Invalid file path: directory traversal not allowed')
+        # Reject null bytes
+        if '\x00' in v:
+            raise ValueError('Invalid file path: contains null bytes')
+        return v
+    
+    @validator('component', 'property', 'value')
+    def validate_no_xss(cls, v):
+        """Basic XSS prevention."""
+        # Check for script tags and other dangerous content
+        dangerous_patterns = ['<script', 'javascript:', '<iframe', '<object', '<embed']
+        for pattern in dangerous_patterns:
+            if pattern.lower() in v.lower():
+                raise ValueError(f'Invalid content: potential XSS detected')
+        return v
+
+
+class WebSocketCommand(BaseModel):
+    """Request model for WebSocket commands."""
+    type: str = Field(..., min_length=1, max_length=50)
+    data: Optional[str] = Field(default=None, max_length=10000)
+
+
+class AnalyzeRequest(BaseModel):
+    """Request model for analyze endpoint."""
+    screenshot: str = Field(..., min_length=1, max_length=10000000)  # Base64 limit
+    audio: str = Field(default="", max_length=10000000)
+    selection: Optional[dict] = None
+
+
+class AnalyzeDemoRequest(BaseModel):
+    """Request model for analyze demo endpoint."""
+    demoType: str = Field(..., min_length=1, max_length=50, pattern=r"^[a-zA-Z0-9\-]+$")
+
+
+class AnalyzeApplyRequest(BaseModel):
+    """Request model for apply changes endpoint."""
+    filePath: str = Field(..., min_length=1, max_length=255, pattern=r"^[a-zA-Z0-9_\-\.\s\/]+")
+    codeChange: str = Field(..., min_length=1, max_length=100000)
+    
+    @validator('filePath')
+    def validate_file_path(cls, v):
+        """Validate file path to prevent directory traversal."""
+        if '..' in v or '~' in v or v.startswith('/') or v.startswith('\\'):
+            raise ValueError('Invalid file path: directory traversal not allowed')
+        return v
+
+
+# Rate limiting implementation
+class RateLimiter:
+    """Simple in-memory rate limiter."""
+    
+    def __init__(self, requests_per_minute: int = 60):
+        self.requests_per_minute = requests_per_minute
+        self.requests: Dict[str, List[float]] = {}
+        self.blocked: Dict[str, float] = {}
+    
+    def is_allowed(self, key: str) -> Tuple[bool, Optional[int]]:
+        """Check if request is allowed. Returns (allowed, retry_after)."""
+        now = time.time()
+        
+        # Check if client is blocked
+        if key in self.blocked:
+            if now < self.blocked[key]:
+                return False, int(self.blocked[key] - now)
+            else:
+                del self.blocked[key]
+        
+        # Clean old requests
+        if key in self.requests:
+            self.requests[key] = [t for t in self.requests[key] if now - t < 60]
+        else:
+            self.requests[key] = []
+        
+        # Check limit
+        if len(self.requests[key]) >= self.requests_per_minute:
+            # Block for 60 seconds
+            self.blocked[key] = now + 60
+            return False, 60
+        
+        self.requests[key].append(now)
+        return True, None
+    
+    def get_remaining(self, key: str) -> int:
+        """Get remaining requests for this window."""
+        now = time.time()
+        if key not in self.requests:
+            return self.requests_per_minute
+        
+        recent_requests = [t for t in self.requests[key] if now - t < 60]
+        return max(0, self.requests_per_minute - len(recent_requests))
+
+
+# Initialize rate limiter
+rate_limiter = RateLimiter(requests_per_minute=100)
+
+
+# Request size limit middleware
+async def request_size_limit_middleware(request: Request, call_next):
+    """Middleware to limit request body size."""
+    content_length = request.headers.get('content-length')
+    max_size = 10 * 1024 * 1024  # 10 MB
+    
+    if content_length and int(content_length) > max_size:
+        return JSONResponse(
+            status_code=413,
+            content={"error": "Request entity too large", "max_size": max_size}
+        )
+    
+    return await call_next(request)
+
+
+# Rate limiting middleware
+async def rate_limit_middleware(request: Request, call_next):
+    """Middleware for rate limiting."""
+    # Skip rate limiting for health checks
+    if request.url.path in ['/health', '/ready', '/']:
+        return await call_next(request)
+    
+    # Get client identifier (IP or API key if authenticated)
+    client_ip = request.client.host if request.client else "unknown"
+    
+    allowed, retry_after = rate_limiter.is_allowed(client_ip)
+    
+    if not allowed:
+        return JSONResponse(
+            status_code=429,
+            content={"error": "Too many requests", "retry_after": retry_after},
+            headers={"Retry-After": str(retry_after)}
+        )
+    
+    response = await call_next(request)
+    
+    # Add rate limit headers
+    remaining = rate_limiter.get_remaining(client_ip)
+    if hasattr(response, 'headers'):
+        response.headers["X-RateLimit-Remaining"] = str(remaining)
+        response.headers["X-RateLimit-Limit"] = "100"
+    
+    return response
+
+
+# Add middleware to app
+app.add_middleware(type("RequestSizeMiddleware", (), {
+    "dispatch": staticmethod(request_size_limit_middleware)
+}))
+
+app.add_middleware(type("RateLimitMiddleware", (), {
+    "dispatch": staticmethod(rate_limit_middleware)
+}))
 
 if __name__ == "__main__":
     import uvicorn
