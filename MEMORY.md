@@ -219,7 +219,7 @@ The most important phase is **rubric validation and deep research**. Never rush 
 **Persistent Token Storage:**
 - **File:** `/data/.openclaw/workspace/TOKENS.md` (gitignored)
 - **Current Tokens:**
-  - GitHub: `__GITHUB_TOKEN_REDACTED__`
+  - GitHub: `__GITHUB_TOKEN__` (use TOOLS.md or TOKENS.md for actual token)
 
 **How to use:**
 ```python

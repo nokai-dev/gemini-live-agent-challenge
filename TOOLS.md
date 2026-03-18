@@ -45,7 +45,7 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ### GitHub
 - **Username:** nokai-dev
-- **Token:** `__GITHUB_TOKEN_REDACTED__`
+- **Token:** `__GITHUB_TOKEN__` (see TOKENS.md for actual)
 - **Default Repo:** gemini-live-agent-challenge
 - **Token File:** `/data/.openclaw/workspace/TOKENS.md` (gitignored)
 - **Repository Policy:** PRIVATE by default
