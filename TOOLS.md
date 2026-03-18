@@ -45,8 +45,9 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ### GitHub
 - **Username:** nokai-dev
-- **Token:** Use `GITHUB_TOKEN` environment variable (never commit to git)
+- **Token:** `__GITHUB_TOKEN_REDACTED__`
 - **Default Repo:** gemini-live-agent-challenge
+- **Token File:** `/data/.openclaw/workspace/TOKENS.md` (gitignored)
 
 ### OCI Images (Required for all hackathons)
 - **Registry:** ghcr.io
@@ -54,6 +55,24 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 - **Auto-build:** GitHub Actions workflow required (`.github/workflows/build-oci.yml`)
 - **Multi-arch:** MUST support linux/amd64 AND linux/arm64 (use QEMU in Actions)
 - **Verification:** Check GitHub Actions tab after push
+
+---
+
+### Global Auto-Commit
+
+**Command:**
+```bash
+# Start watching all repos
+python3 ~/.openclaw/skills/git-autocommit/git_autocommit.py start
+
+# Check status
+python3 ~/.openclaw/skills/git-autocommit/git_autocommit.py status
+
+# View logs
+tail -f /tmp/openclaw-git-autocommit.log
+```
+
+**Config:** `~/.openclaw/git-autocommit.json`
 
 ---
 

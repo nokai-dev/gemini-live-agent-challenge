@@ -185,6 +185,54 @@ The most important phase is **rubric validation and deep research**. Never rush 
 - Each hackathon gets its own research agent
 - Agency agents are reusable building blocks
 
+### Token Management System
+
+**Persistent Token Storage:**
+- **File:** `/data/.openclaw/workspace/TOKENS.md` (gitignored)
+- **Current Tokens:**
+  - GitHub: `__GITHUB_TOKEN_REDACTED__`
+
+**How to use:**
+```python
+# In Python scripts
+import os
+token = os.environ.get('GITHUB_TOKEN') or open('/data/.openclaw/workspace/TOKENS.md').read().split('```')[1].strip()
+```
+
+**Never ask for tokens twice** - check TOOLS.md and TOKENS.md first!
+
+---
+
+### Global Git Auto-Commit System
+
+**What it does:** Automatically commits and pushes code changes across ALL git repos in the workspace.
+
+**Location:** `/data/.openclaw/workspace/.openclaw/skills/git-autocommit/`
+
+**Commands:**
+```bash
+# Start auto-commit watcher (background)
+python3 /data/.openclaw/workspace/.openclaw/skills/git-autocommit/git_autocommit.py start
+
+# Check status
+python3 /data/.openclaw/workspace/.openclaw/skills/git-autocommit/git_autocommit.py status
+
+# Stop watcher
+python3 /data/.openclaw/workspace/.openclaw/skills/git-autocommit/git_autocommit.py stop
+
+# Run in foreground (for testing)
+python3 /data/.openclaw/workspace/.openclaw/skills/git-autocommit/git_autocommit.py run
+```
+
+**Features:**
+- Watches ALL git repos in `/data/.openclaw/workspace/`
+- Commits every 30 seconds if files changed
+- Auto-pushes to GitHub
+- Commit message: `[repo-name] Auto-commit N files at timestamp`
+- Logs to `/tmp/openclaw-git-autocommit.log`
+
+---
+
 ### Gemini Deep Research Prompt Template
 
 **Use this template for every hackathon. Customize the bracketed sections.**

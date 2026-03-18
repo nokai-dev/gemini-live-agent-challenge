@@ -1,0 +1,5 @@
+#!/bin/bash
+# OpenClaw Git Auto-Commit wrapper
+# Usage: openclaw-git-autocommit [start|stop|status]
+
+python3 /data/.openclaw/workspace/.openclaw/skills/git-autocommit/git_autocommit.py "$@"
