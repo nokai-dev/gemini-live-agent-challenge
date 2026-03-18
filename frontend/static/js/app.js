@@ -23,11 +23,25 @@ class FocusCompanionApp {
         this.lastScreenAnalysis = null;
         this.screenAnalysisInterval = null;
         this.focusState = 'unknown'; // 'focused', 'distracted', 'unknown'
+        
+        // Adaptive capture config - optimized for bandwidth
+        // Lower quality when focused (less critical), higher when distracted (need detail)
         this.captureConfig = {
-            focused: { interval: 60000, quality: 0.5 },    // Every 60s when focused
-            distracted: { interval: 10000, quality: 0.8 }, // Every 10s when distracted
-            normal: { interval: 30000, quality: 0.7 }      // Every 30s default
+            focused: { interval: 60000, quality: 0.3 },    // Every 60s, 30% quality (saves bandwidth)
+            distracted: { interval: 10000, quality: 0.6 }, // Every 10s, 60% quality (need clarity)
+            normal: { interval: 30000, quality: 0.5 }       // Every 30s, 50% quality (balanced)
         };
+        
+        // Track compression stats
+        this.compressionStats = {
+            captures: 0,
+            totalOriginalSize: 0,
+            totalCompressedSize: 0
+        };
+        
+        // Session persistence
+        this.SESSION_STORAGE_KEY = 'focuscompanion_session';
+        this.sessionRecoveryAttempted = false;
         
         // Bind UI elements
         this.bindElements();
@@ -35,6 +49,154 @@ class FocusCompanionApp {
         
         // Setup callbacks
         this.setupCallbacks();
+        
+        // Try to recover session on load
+        this.attemptSessionRecovery();
+        
+        // Setup beforeunload handler to save session
+        window.addEventListener('beforeunload', () => this.saveSessionState());
+    }
+    
+    // ==================== Session Persistence ====================
+    
+    attemptSessionRecovery() {
+        """Try to recover session from localStorage on page load."""
+        if (this.sessionRecoveryAttempted) return;
+        this.sessionRecoveryAttempted = true;
+        
+        try {
+            const savedSession = localStorage.getItem(this.SESSION_STORAGE_KEY);
+            if (!savedSession) return;
+            
+            const sessionData = JSON.parse(savedSession);
+            
+            // Check if session is still valid (not ended, not too old)
+            if (sessionData.state === 'ended') {
+                this.clearSavedSession();
+                return;
+            }
+            
+            // Check if session is too old (over 24 hours)
+            const sessionAge = Date.now() - sessionData.savedAt;
+            if (sessionAge > 24 * 60 * 60 * 1000) {
+                this.clearSavedSession();
+                return;
+            }
+            
+            // Restore session data
+            this.currentSession = {
+                goal: sessionData.goal,
+                duration: sessionData.duration,
+                startTime: sessionData.startTime,
+                totalPausedTime: sessionData.totalPausedTime || 0,
+                state: sessionData.state
+            };
+            
+            // Restore form values
+            this.goalInput.value = sessionData.goal || '';
+            this.durationSelect.value = sessionData.duration || 25;
+            
+            // Show recovery UI
+            this.showSessionRecoveryDialog(sessionData);
+            
+        } catch (error) {
+            console.error('Error recovering session:', error);
+            this.clearSavedSession();
+        }
+    }
+    
+    showSessionRecoveryDialog(sessionData) {
+        """Show dialog to user asking if they want to recover the session."""
+        const elapsed = Math.floor((Date.now() - sessionData.startTime) / 1000);
+        const total = sessionData.duration * 60;
+        const remaining = Math.max(0, total - elapsed + (sessionData.totalPausedTime || 0) / 1000);
+        const minutes = Math.floor(remaining / 60);
+        
+        const message = `You have an active session: "${sessionData.goal}" with ${minutes} minutes remaining.\n\nWould you like to resume it?`;
+        
+        if (confirm(message)) {
+            this.recoverSession();
+        } else {
+            this.clearSavedSession();
+            this.currentSession = null;
+        }
+    }
+    
+    recoverSession() {
+        """Recover and reconnect to an existing session."""
+        if (!this.currentSession) return;
+        
+        // Update UI
+        this.showSessionPanel();
+        this.goalDisplay.textContent = this.currentSession.goal;
+        this.updateTimer();
+        
+        // Start timer
+        this.startTimer();
+        
+        // Reconnect WebSocket
+        this.reconnectWebSocket();
+        
+        this.addTranscript('system', 'Session recovered. Reconnecting...');
+    }
+    
+    async reconnectWebSocket() {
+        """Reconnect to WebSocket and restore session."""
+        try {
+            await this.wsClient.connect();
+            this.wsClient.connectGemini();
+            
+            // Restore session on server
+            this.wsClient.startSession(this.currentSession.duration, this.currentSession.goal);
+            
+            // If session was paused, pause it again
+            if (this.currentSession.state === 'paused') {
+                this.wsClient.pauseSession();
+                this.showPauseState();
+            } else {
+                // Resume screen analysis if active
+                const screenAllowed = await this.screenCapture.requestPermission();
+                if (screenAllowed) {
+                    this.startScreenAnalysis();
+                }
+            }
+            
+            // Start audio capture
+            await this.audioManager.startCapture();
+            
+        } catch (error) {
+            console.error('Failed to recover session:', error);
+            this.addTranscript('system', 'Failed to reconnect. Please start a new session.');
+            this.clearSavedSession();
+        }
+    }
+    
+    saveSessionState() {
+        """Save current session state to localStorage."""
+        if (!this.currentSession) {
+            this.clearSavedSession();
+            return;
+        }
+        
+        try {
+            const sessionData = {
+                goal: this.currentSession.goal,
+                duration: this.currentSession.duration,
+                startTime: this.currentSession.startTime,
+                totalPausedTime: this.currentSession.totalPausedTime || 0,
+                state: this.currentSession.state,
+                savedAt: Date.now()
+            };
+            
+            localStorage.setItem(this.SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+        } catch (error) {
+            console.error('Error saving session:', error);
+        }
+    }
+    
+    clearSavedSession() {
+        """Clear saved session from localStorage."""
+        localStorage.removeItem(this.SESSION_STORAGE_KEY);
     }
     
     bindElements() {
@@ -384,6 +546,19 @@ class FocusCompanionApp {
     
     async sendScreenAnalysis(imageData) {
         if (!this.isConnected) return;
+        
+        // Track compression stats
+        const estimatedOriginal = (1280 * 720 * 3) / 1024; // ~2.6MB uncompressed
+        const compressedSize = (imageData.length * 0.75) / 1024;
+        this.compressionStats.captures++;
+        this.compressionStats.totalOriginalSize += estimatedOriginal;
+        this.compressionStats.totalCompressedSize += compressedSize;
+        
+        // Log stats every 10 captures
+        if (this.compressionStats.captures % 10 === 0) {
+            const avgSavings = ((this.compressionStats.totalOriginalSize - this.compressionStats.totalCompressedSize) / this.compressionStats.totalOriginalSize * 100).toFixed(1);
+            console.log(`📊 Compression stats: ${this.compressionStats.captures} captures, ~${avgSavings}% avg savings`);
+        }
         
         // Send screen data to server for analysis
         this.wsClient.send('screen_analysis', {
