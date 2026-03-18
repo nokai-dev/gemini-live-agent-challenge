@@ -69,6 +69,13 @@ Don't ask permission. Just do it.
    - Rescue ideas go through SAME critique pipeline
    - No shortcuts, no "good enough" bypass
 
+### 7. ALL GITHUB REPOSITORIES ARE PRIVATE BY DEFAULT
+   - **GLOBAL RULE:** Every new GitHub repository must be created as PRIVATE
+   - Use `"private": true` in all GitHub API calls
+   - Only make PUBLIC if user explicitly says "make this public"
+   - This applies to ALL agents, ALL sessions, ALL projects
+   - **No exceptions unless explicitly requested**
+
 ## The Three Winning Archetypes (From 20+ Actual Winners)
 
 **Archetype 1: The Empathy & Accessibility Engine** ⭐⭐⭐
