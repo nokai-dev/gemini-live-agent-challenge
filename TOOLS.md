@@ -48,6 +48,9 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 - **Token:** `__GITHUB_TOKEN_REDACTED__`
 - **Default Repo:** gemini-live-agent-challenge
 - **Token File:** `/data/.openclaw/workspace/TOKENS.md` (gitignored)
+- **Repository Policy:** PRIVATE by default
+  - All new repos created as private
+  - Only make public if explicitly requested
 
 ### OCI Images (Required for all hackathons)
 - **Registry:** ghcr.io

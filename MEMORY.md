@@ -203,6 +203,33 @@ token = os.environ.get('GITHUB_TOKEN') or open('/data/.openclaw/workspace/TOKENS
 
 ---
 
+### GitHub Repository Policy
+
+**Default: PRIVATE repositories**
+
+When creating new GitHub repos:
+```bash
+# API call must include "private": true
+curl -X POST \
+  -H "Authorization: token $GITHUB_TOKEN" \
+  https://api.github.com/user/repos \
+  -d '{
+    "name": "repo-name",
+    "private": true,  # ← ALWAYS private
+    ...
+  }'
+```
+
+**Projects that should be PRIVATE:**
+- Hackathon analysis (competitor data)
+- Personal tokens/configs
+- Experimental/incomplete work
+- Anything with user data
+
+**Exception:** Only make public if explicitly asked.
+
+---
+
 ### Global Git Auto-Commit System
 
 **What it does:** Automatically commits and pushes code changes across ALL git repos in the workspace.
