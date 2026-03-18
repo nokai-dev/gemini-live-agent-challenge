@@ -143,6 +143,36 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - **NEVER build without user approval**
 - **NEVER skip critique for any idea**
 - **NEVER execute deep research myself - user runs it in Gemini Pro**
+- **NEVER skip data validation checks**
+
+## 🔍 Data Verification Rules (Anti-Hallucination)
+
+When reporting on files, data, or pipeline status:
+
+**1. SHOW RAW OUTPUT, NOT SUMMARIES**
+- Never say "the file has data" — show `cat` or `head` output
+- Never say "the scraper is working" — show the actual output file contents
+- Never say "already collected" without verifying file has non-empty content
+
+**2. VALIDATE AT EACH PIPELINE PHASE**
+- For any data pipeline: run a validation step before declaring success
+- Example: After scraping, show `wc -l` AND `head -5` of the output file
+- If a phase outputs empty files, FLAG IT IMMEDIATELY as a failure
+
+**3. RED FLAG PHRASES — VERIFY BEFORE CONTINUING**
+- "already collected" → verify with `cat`/`head`
+- "working" / "successful" → show raw output proof
+- "data is ready" → show line count AND file size
+- "the pipeline ran" → show the actual output, not just the script existing
+
+**4. BE EXPLICIT ABOUT UNCERTAINTY**
+- If you didn't personally run a step, say "I haven't verified this"
+- If file sizes look wrong (e.g. 2 bytes for thousands of records), investigate immediately
+- If a claimed output file doesn't exist or is empty, say so clearly
+
+**5. ALWAYS USE TWO-INPUT VERIFICATION**
+- Cross-check: file size + line count + sample content together
+- Never rely on a single indicator (like just `ls -la` file size)
 
 ## External vs Internal
 
