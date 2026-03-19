@@ -131,11 +131,6 @@ function App() {
     success('Selection captured');
   }, [success]);
 
-  const handleTranscription = useCallback((text: string) => {
-    setTranscription(text);
-    processCommand(text);
-  }, [screenshot, selection]);
-
   const processCommand = async (command: string) => {
     if (!screenshot) {
       error('Please capture a screenshot first');
@@ -174,6 +169,11 @@ function App() {
       failSession(sessionId, analyzeCommandOp.error?.message || 'Analysis failed');
     }
   };
+
+  const handleTranscription = useCallback((text: string) => {
+    setTranscription(text);
+    processCommand(text);
+  }, [screenshot, selection, processCommand]);
 
   const handleApplyChange = async () => {
     if (!analysisResult) return;
@@ -477,13 +477,6 @@ function App() {
                 key={fileRefreshTrigger}
                 onFileChange={() => {}}
               />
-
-              {/* Session History */}
-              <SessionHistory
-                entries={sessionEntries}
-                onReplay={replaySession}
-                maxItems={10}
-              />
             </div>
           </div>
         </div>
@@ -502,31 +495,33 @@ function App() {
         {/* Toast Notifications */}
         <ToastContainer />
 
-        {/* Session History Panel */}
-        <SessionHistory
-          entries={sessionEntries}
-          onReplay={(id) => {
-            const session = replaySession(id);
-            if (session) {
-              setScreenshot(session.screenshot);
-              setSelection(session.selection);
-              setTranscription(session.command);
-              setAnalysisResult({
-                targetFile: session.targetFile,
-                description: session.description,
-                codeChange: session.codeChange,
-                fullBefore: session.codeChange.before,
-                fullAfter: session.codeChange.after,
-              });
-              setStatus('ready');
-              success('Session replayed!');
-            }
-          }}
-          onDelete={deleteSession}
-          onClear={clearAllSessions}
-          onExport={exportSessions}
-          onImport={importSessions}
-        />
+        {/* Session History - Full featured panel */}
+        <div className="fixed bottom-4 right-4 w-80 z-40">
+          <SessionHistory
+            entries={sessionEntries}
+            onReplay={(id) => {
+              const session = replaySession(id);
+              if (session) {
+                setScreenshot(session.screenshot);
+                setSelection(session.selection);
+                setTranscription(session.command);
+                setAnalysisResult({
+                  targetFile: session.targetFile,
+                  description: session.description,
+                  codeChange: session.codeChange,
+                  fullBefore: session.codeChange.before,
+                  fullAfter: session.codeChange.after,
+                });
+                setStatus('ready');
+                success('Session replayed!');
+              }
+            }}
+            onDelete={deleteSession}
+            onClear={clearAllSessions}
+            onExport={exportSessions}
+            onImport={importSessions}
+          />
+        </div>
       </div>
     </ErrorBoundary>
   );
