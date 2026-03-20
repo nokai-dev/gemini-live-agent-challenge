@@ -41,7 +41,7 @@ Object.defineProperty(window, 'electronAPI', {
 });
 
 // Import App after mocking
-import App from '../App';
+import App from '../renderer/App';
 
 describe('VoicePilot App', () => {
   beforeEach(() => {

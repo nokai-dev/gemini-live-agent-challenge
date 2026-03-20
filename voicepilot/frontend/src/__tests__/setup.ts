@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Mock electronAPI globally for tests
 declare global {
@@ -13,10 +14,29 @@ declare global {
   }
 }
 
+// Mock fetch globally for backend health checks
+const mockFetch = vi.fn().mockResolvedValue(
+  new Response(JSON.stringify({ status: 'healthy' }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+);
+global.fetch = mockFetch;
+
 // Setup default mocks before each test
 beforeEach(() => {
+  vi.clearAllMocks();
+  
+  // Reset fetch to return healthy status
+  mockFetch.mockResolvedValue(
+    new Response(JSON.stringify({ status: 'healthy' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  );
+
   window.electronAPI = {
-    analyzeCommand: jest.fn().mockResolvedValue({
+    analyzeCommand: vi.fn().mockResolvedValue({
       success: true,
       targetFile: 'Button.tsx',
       description: 'Change button color',
@@ -27,19 +47,19 @@ beforeEach(() => {
       fullBefore: '// Before',
       fullAfter: '// After',
     }),
-    applyChange: jest.fn().mockResolvedValue({
+    applyChange: vi.fn().mockResolvedValue({
       success: true,
       message: 'Changes applied',
     }),
-    getDemoFiles: jest.fn().mockResolvedValue({
+    getDemoFiles: vi.fn().mockResolvedValue({
       success: true,
       files: [],
     }),
-    getFileContent: jest.fn().mockResolvedValue({
+    getFileContent: vi.fn().mockResolvedValue({
       success: true,
       content: '',
     }),
-    checkBackendHealth: jest.fn().mockResolvedValue({
+    checkBackendHealth: vi.fn().mockResolvedValue({
       isHealthy: true,
       url: 'http://localhost:8080',
     }),
@@ -48,5 +68,5 @@ beforeEach(() => {
 
 // Clean up after each test
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
