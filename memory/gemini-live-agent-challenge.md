@@ -123,3 +123,31 @@ This hackathon is **accessibility-biased**. Archetype 1 (Empathy & Accessibility
 **Build Complexity:** Medium
 
 **Phase 7 Status:** READY — Spawning build agents
+
+---
+
+## Improvement Cycle Log — 2026-03-19 08:04 UTC
+
+### Issues Found & Fixed
+
+**🔴 CRITICAL (Demo-Breaking):**
+1. Duplicate `<SessionHistory>` JSX — 2 instances causing state sync issues → REMOVED duplicate, consolidated to single floating panel
+2. `handleTranscription` `useCallback` missing `processCommand` in deps → FIXED order + added to deps
+3. `Button.tsx` syntax error: `backgroundColor: "#8b5cf6;",",` → FIXED to `"#8b5cf6",`
+
+**🟡 CI/CD (Pre-existing, improved):**
+4. Deprecated GitHub Actions versions → Updated all to v4/v5/v6/v7
+5. No multi-arch OCI build → Added QEMU + buildx with linux/amd64 + linux/arm64
+
+**⚠️ NOT FIXED (known limitations):**
+- Backend `/api/analyze` endpoint stubs only — no real Gemini API integration (mock fallback works for demo)
+- ESLint config has missing `@eslint/js` dep (pre-existing, not introduced by recent changes)
+- ScreenPreview shows placeholder text for captured screens (demo mode acceptable)
+
+### Commits
+- `f9dc467` fix: critical bugs and CI improvements for VoicePilot demo
+
+### Unresolved (Lower Priority)
+- No codecov integration for frontend in CI (backend only)
+- Demo commands set `screenshot='mock'` — no actual screenshot display (acceptable for demo flow)
+- Frontend has shallow test coverage (~33%)

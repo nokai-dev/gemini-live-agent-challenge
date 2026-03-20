@@ -26,7 +26,7 @@ const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
   <React.StrictMode>
     <Sentry.ErrorBoundary
-      fallback={({ error, resetError }) => (
+      fallback={({ error, resetError }: { error: Error; resetError: () => void }) => (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-md">
             <h1 className="text-xl font-bold text-red-600 mb-4">Something went wrong</h1>

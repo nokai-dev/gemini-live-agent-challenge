@@ -66,7 +66,7 @@ function App() {
 
   // Backend connectivity monitoring
   const backendStatus = useBackendStatus({
-    interval: 30000, // Check every 30 seconds
+    pollInterval: 30000, // Check every 30 seconds
     onStatusChange: (status) => {
       if (status === 'offline') {
         error('Backend is offline. Running in demo mode.');
@@ -516,10 +516,6 @@ function App() {
                 success('Session replayed!');
               }
             }}
-            onDelete={deleteSession}
-            onClear={clearAllSessions}
-            onExport={exportSessions}
-            onImport={importSessions}
           />
         </div>
       </div>
