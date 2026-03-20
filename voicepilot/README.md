@@ -2,6 +2,10 @@
 
 **AI-Powered Code Editing via Voice and Screen Capture**
 
+[![Backend Tests](https://github.com/nokai-dev/voicepilot/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/nokai-dev/voicepilot/actions)
+[![codecov](https://codecov.io/gh/nokai-dev/voicepilot/graph/badge.svg?token=YOUR_TOKEN)](https://codecov.io/gh/nokai-dev/voicepilot)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 VoicePilot is an Electron-based desktop application that enables developers to edit React code using natural voice commands and screen capture analysis powered by Google's Gemini Live API.
 
 ## 🎯 Project Overview
