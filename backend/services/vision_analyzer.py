@@ -2,6 +2,7 @@
 import base64
 import json
 import logging
+import time
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 from enum import Enum
@@ -296,8 +297,6 @@ class FocusCoach:
         Returns:
             Coaching message or None if no coaching needed
         """
-        import time
-        
         # Check cooldown
         current_time = time.time()
         if current_time - self.last_coaching_time < self.coaching_cooldown_seconds:

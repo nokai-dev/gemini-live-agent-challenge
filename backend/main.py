@@ -2,12 +2,24 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import logging
 import sys
 import json
+import time
 
 from .config import settings
 from .api.websocket import handle_focus_session
+
+
+def validate_config() -> None:
+    """Validate required configuration at startup. Fail fast if missing."""
+    missing = []
+    if not hasattr(settings, 'GEMINI_API_KEY') or not settings.GEMINI_API_KEY:
+        missing.append("GEMINI_API_KEY")
+    if missing:
+        raise RuntimeError(f"Missing required environment variables: {', '.join(missing)}")
+
 
 # Configure logging
 class JSONFormatter(logging.Formatter):
@@ -22,6 +34,16 @@ class JSONFormatter(logging.Formatter):
         if hasattr(record, "extra"):
             log_data.update(record.extra)
         return json.dumps(log_data)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup/shutdown lifespan handler."""
+    validate_config()
+    logger.info("FocusCompanion starting up — config validated")
+    yield
+    logger.info("FocusCompanion shutting down")
+
 
 # Setup logging
 log_handler = logging.StreamHandler(sys.stdout)
@@ -42,7 +64,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="FocusCompanion",
     description="AI-powered focus management with Gemini Live API",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 # Add CORS middleware
@@ -58,7 +83,6 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    import time
     return {
         "status": "healthy",
         "service": "FocusCompanion",
