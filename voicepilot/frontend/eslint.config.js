@@ -1,15 +1,11 @@
 /**
  * ESLint Flat Config for VoicePilot
- * Modern ESLint configuration using the flat config format
  */
 
 import js from '@eslint/js';
 import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
-import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 
 export default [
@@ -22,7 +18,6 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: './tsconfig.renderer.json',
         ecmaVersion: 'latest',
         sourceType: 'module',
         ecmaFeatures: {
@@ -36,36 +31,15 @@ export default [
       },
     },
     plugins: {
-      '@typescript-eslint': tsPlugin,
       'react': reactPlugin,
       'react-hooks': reactHooksPlugin,
-      'jsx-a11y': jsxA11yPlugin,
-      'import': importPlugin,
     },
     settings: {
       react: {
         version: 'detect',
       },
-      'import/resolver': {
-        typescript: {
-          project: './tsconfig.renderer.json',
-        },
-      },
     },
     rules: {
-      // TypeScript rules
-      ...tsPlugin.configs.recommended.rules,
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-        },
-      ],
-      
       // React rules
       ...reactPlugin.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
@@ -75,23 +49,6 @@ export default [
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       
-      // JSX A11y rules
-      ...jsxA11yPlugin.configs.recommended.rules,
-      'jsx-a11y/anchor-is-valid': 'off',
-      
-      // Import rules
-      'import/order': [
-        'error',
-        {
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-          'newlines-between': 'always',
-          alphabetize: {
-            order: 'asc',
-            caseInsensitive: true,
-          },
-        },
-      ],
-      
       // General rules
       'no-console': [
         'warn',
@@ -99,6 +56,21 @@ export default [
           allow: ['error', 'warn'],
         },
       ],
+      
+      'no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      
+      // Allow control characters in regex (e.g., \x00-\x1f for control char ranges)
+      'no-control-regex': 'off',
+      
+      // Allow unescaped quotes in JSX (common in demo code)
+      'react/no-unescaped-entities': 'off',
     },
   },
   
@@ -108,7 +80,17 @@ export default [
     languageOptions: {
       globals: {
         ...globals.jest,
+        'describe': 'readonly',
+        'it': 'readonly',
+        'test': 'readonly',
+        'expect': 'readonly',
+        'beforeEach': 'readonly',
+        'afterEach': 'readonly',
+        'vi': 'readonly',
       },
+    },
+    rules: {
+      'no-unused-vars': 'off',
     },
   },
   

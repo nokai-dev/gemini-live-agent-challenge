@@ -16,8 +16,8 @@
     "test": "vitest run --reporter=verbose",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage --reporter=verbose",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\""
   },
