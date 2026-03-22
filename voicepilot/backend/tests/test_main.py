@@ -130,9 +130,9 @@ class TestCORS:
     
     def test_cors_headers_present(self):
         """Test CORS headers are present on responses."""
-        response = client.options("/health")
+        response = client.get("/health", headers={"Origin": "http://localhost:3000"})
         assert response.status_code == 200
-        # CORS middleware should handle OPTIONS
+        assert "access-control-allow-origin" in response.headers
     
     def test_cors_origins_allowed(self):
         """Test that all origins are allowed."""

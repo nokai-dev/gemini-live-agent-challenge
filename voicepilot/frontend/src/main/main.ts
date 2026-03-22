@@ -203,7 +203,7 @@ async function healthCheck(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/health`, { method: 'GET' });
     if (response.ok) {
-      const data = await response.json();
+      const data = (await response.json()) as { status?: string };
       return data.status === 'healthy';
     }
     return false;
@@ -220,7 +220,7 @@ async function callBackendAPI(endpoint: string, body: unknown): Promise<any> {
   });
   
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+    const error = (await response.json().catch(() => ({ message: `HTTP ${response.status}` }))) as { message?: string; error?: string };
     throw new Error(error.message || error.error || `HTTP ${response.status}`);
   }
   
