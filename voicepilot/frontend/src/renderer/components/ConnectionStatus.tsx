@@ -13,7 +13,7 @@ interface ConnectionStatusProps {
 
 export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   status,
-  isOnline,
+  isOnline: _isOnline,
   lastChecked,
   error,
   onRetry,

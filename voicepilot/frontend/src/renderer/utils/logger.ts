@@ -6,11 +6,11 @@
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 export interface Logger {
-  debug: (...args: any[]) => void;
-  log: (...args: any[]) => void;
-  info: (...args: any[]) => void;
-  warn: (...args: any[]) => void;
-  error: (...args: any[]) => void;
+  debug: (..._args: any[]) => void;
+  log: (..._args: any[]) => void;
+  info: (..._args: any[]) => void;
+  warn: (..._args: any[]) => void;
+  error: (..._args: any[]) => void;
 }
 
 /**

@@ -1,16 +1,16 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, Square, Volume2 } from 'lucide-react';
+import { Volume2 } from 'lucide-react';
 
 interface VoiceRecorderProps {
   isRecording: boolean;
-  onTranscription: (text: string) => void;
+  onTranscription: (_text: string) => void;
   onStartRecording: () => void;
 }
 
 export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   isRecording,
   onTranscription,
-  onStartRecording,
+  onStartRecording: _onStartRecording,
 }) => {
   const [audioLevel, setAudioLevel] = useState(0);
   const [transcript, setTranscript] = useState('');

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MousePointer2, X } from 'lucide-react';
 
 interface HighlightOverlayProps {
-  onSelectionComplete: (rect: { x: number; y: number; width: number; height: number }) => void;
+  onSelectionComplete: (_rect: { x: number; y: number; width: number; height: number }) => void;
   onCancel: () => void;
 }
 

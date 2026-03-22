@@ -1,14 +1,15 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { beforeEach, afterEach, vi } from 'vitest';
 
 // Mock electronAPI globally for tests
 declare global {
+  // eslint-disable-next-line no-unused-vars
   interface Window {
     electronAPI: {
-      analyzeCommand: (data: any) => Promise<any>;
-      applyChange: (data: any) => Promise<any>;
+      analyzeCommand: (_data: any) => Promise<any>;
+      applyChange: (_data: any) => Promise<any>;
       getDemoFiles: () => Promise<any>;
-      getFileContent: (fileName: string) => Promise<any>;
+      getFileContent: (_fileName: string) => Promise<any>;
       checkBackendHealth: () => Promise<any>;
     };
   }

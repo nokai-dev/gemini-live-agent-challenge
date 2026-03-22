@@ -12,7 +12,7 @@ export interface BackendStatusState {
 
 export interface UseBackendStatusOptions {
   pollInterval?: number; // milliseconds
-  onStatusChange?: (status: BackendStatus, previousStatus: BackendStatus) => void;
+  onStatusChange?: (_status: BackendStatus, _previousStatus: BackendStatus) => void;
   onOffline?: () => void;
   onOnline?: () => void;
 }

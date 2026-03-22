@@ -10,12 +10,12 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { LoadingOverlay } from './components/LoadingSpinner';
 import { useToast } from './components/Toast';
 import { useAsyncOperation } from './hooks/useAsyncOperation';
-import { useKeyboardShortcuts, VOICEPILOT_SHORTCUTS } from './hooks/useKeyboardShortcuts';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useSessionStorage } from './hooks/useSessionStorage';
 import { SessionHistory } from './components/SessionHistory';
 import { useBackendStatus } from './hooks/useBackendStatus';
-import { ConnectionStatus, ConnectionStatusDot, OfflineBanner } from './components/ConnectionStatus';
-import { ErrorDisplay, getErrorType, getFriendlyErrorMessage } from './components/ErrorDisplay';
+import { ConnectionStatusDot, OfflineBanner } from './components/ConnectionStatus';
+import { ErrorDisplay, getErrorType } from './components/ErrorDisplay';
 import './styles/main.css';
 
 type AppStatus = 'idle' | 'capturing' | 'recording' | 'processing' | 'ready' | 'applied';
@@ -58,10 +58,6 @@ function App() {
     updateSession,
     failSession,
     replaySession,
-    deleteSession,
-    clearAllSessions,
-    exportSessions,
-    importSessions,
   } = useSessionStorage();
 
   // Backend connectivity monitoring

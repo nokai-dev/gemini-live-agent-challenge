@@ -4,7 +4,7 @@ import { Camera, Image as ImageIcon, X } from 'lucide-react';
 interface ScreenPreviewProps {
   screenshot: string | null;
   selection: { x: number; y: number; width: number; height: number } | null;
-  onCapture: (imageData: string) => void;
+  onCapture: (_imageData: string) => void;
 }
 
 export const ScreenPreview: React.FC<ScreenPreviewProps> = ({

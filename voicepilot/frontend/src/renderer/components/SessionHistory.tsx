@@ -4,7 +4,7 @@ import { SessionEntry } from '../hooks/useSessionStorage';
 
 interface SessionHistoryProps {
   entries: SessionEntry[];
-  onReplay: (id: string) => void;
+  onReplay: (_id: string) => void;
   maxItems?: number;
 }
 

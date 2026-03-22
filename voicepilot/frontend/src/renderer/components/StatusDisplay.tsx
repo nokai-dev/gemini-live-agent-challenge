@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, Monitor, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mic, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface StatusDisplayProps {
   status: string;
@@ -7,7 +7,7 @@ interface StatusDisplayProps {
   isCapturing: boolean;
 }
 
-const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, isListening, isCapturing }) => {
+const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, isListening, isCapturing: _isCapturing }) => {
   const getStatusColor = () => {
     if (status === 'Ready') return 'bg-gray-700';
     if (status === 'Connected') return 'bg-blue-900/50 border-blue-500';

@@ -243,14 +243,10 @@ ipcMain.handle('get-screen-sources', async () => {
 });
 
 // Capture screen
-ipcMain.handle('capture-screen', async (event, sourceId: string) => {
-  try {
-    // In a real implementation, this would capture the screen
-    // For demo, return success
-    return { success: true, message: 'Screen captured' };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
-  }
+ipcMain.handle('capture-screen', async (_event, _sourceId: string) => {
+  // In a real implementation, this would capture the screen
+  // For demo, return success
+  return { success: true, message: 'Screen captured' };
 });
 
 // Analyze command - tries backend API first, falls back to mock

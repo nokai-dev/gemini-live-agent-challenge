@@ -11,7 +11,7 @@ export interface Toast {
 }
 
 interface ToastItemProps extends Toast {
-  onRemove: (id: string) => void;
+  onRemove: (_id: string) => void;
 }
 
 const icons = {
@@ -81,7 +81,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ id, type, message, duration = 500
 
 interface ToastContainerProps {
   toasts: Toast[];
-  onRemove: (id: string) => void;
+  onRemove: (_id: string) => void;
 }
 
 /**

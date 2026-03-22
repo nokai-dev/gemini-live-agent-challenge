@@ -8,7 +8,7 @@ export interface AsyncOperationState<T> {
 }
 
 export interface AsyncOperationReturn<T> extends AsyncOperationState<T> {
-  execute: (...args: any[]) => Promise<T | null>;
+  execute: (..._args: any[]) => Promise<T | null>;
   reset: () => void;
   retry: () => Promise<T | null>;
 }
@@ -16,8 +16,8 @@ export interface AsyncOperationReturn<T> extends AsyncOperationState<T> {
 export interface UseAsyncOperationOptions {
   maxRetries?: number;
   retryDelay?: number;
-  onError?: (error: Error) => void;
-  onSuccess?: (data: any) => void;
+  onError?: (_error: Error) => void;
+  onSuccess?: (_data: any) => void;
 }
 
 /**
@@ -25,7 +25,7 @@ export interface UseAsyncOperationOptions {
  * error handling, and automatic retry logic
  */
 export function useAsyncOperation<T>(
-  asyncFunction: (...args: any[]) => Promise<T>,
+  asyncFunction: (..._args: any[]) => Promise<T>,
   options: UseAsyncOperationOptions = {}
 ): AsyncOperationReturn<T> {
   const { maxRetries = 3, retryDelay = 1000, onError, onSuccess } = options;
