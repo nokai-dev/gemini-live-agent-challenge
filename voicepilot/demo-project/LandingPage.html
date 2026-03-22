@@ -8,14 +8,9 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
   </style>
 </head>
 <body>
@@ -23,95 +18,267 @@
   <script type="text/babel">
     const { useState } = React;
 
-    // Button Component
-    const Button = ({ children, onClick }) => {
-      const [hover, setHover] = useState(false);
-      return (
-        <button
-          onClick={onClick}
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-          style={{
+    // Navigation Component
+    const Navbar = ({ title = "VoicePilot" }) => (
+      <nav style={{
+        padding: "16px 0",
+        borderBottom: "1px solid #e5e7eb",
+        backgroundColor: "white"
+      }}>
+        <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: "20px", fontWeight: "700", color: "#111827" }}>{title}</span>
+          <div style={{ display: "flex", gap: "24px" }}>
+            <span style={{ color: "#6b7280", cursor: "pointer" }}>Features</span>
+            <span style={{ color: "#6b7280", cursor: "pointer" }}>Pricing</span>
+            <span style={{ color: "#6b7280", cursor: "pointer" }}>About</span>
+          </div>
+        </div>
+      </nav>
+    );
+
+    // Hero Section Component
+    const Hero = ({ 
+      title = "Build Faster with Your Voice", 
+      subtitle = "Edit code naturally. Point at UI elements and speak your changes.",
+      buttonText = "Get Started"
+    }) => (
+      <section style={{
+        padding: "80px 0",
+        backgroundColor: "#f9fafb",
+        textAlign: "center"
+      }}>
+        <div className="container">
+          <h1 style={{
+            fontSize: "48px",
+            fontWeight: "800",
+            color: "#111827",
+            marginBottom: "16px",
+            lineHeight: "1.2"
+          }}>
+            {title}
+          </h1>
+          <p style={{
+            fontSize: "18px",
+            color: "#6b7280",
+            maxWidth: "600px",
+            margin: "0 auto 32px",
+            lineHeight: "1.6"
+          }}>
+            {subtitle}
+          </p>
+          <button style={{
             backgroundColor: "#8b5cf6",
             color: "white",
-            fontSize: "14px",
-            padding: "12px 24px",
+            fontSize: "16px",
+            fontWeight: "600",
+            padding: "14px 32px",
             borderRadius: "8px",
             border: "none",
             cursor: "pointer",
-            fontWeight: 600,
-            transition: "all 0.2s ease",
-            opacity: hover ? 0.9 : 1,
-          }}
-        >
-          {children}
-        </button>
-      );
-    };
-
-    // Card Component
-    const Card = ({ title, description }) => {
-      return (
-        <div
-          style={{
-            backgroundColor: "white",
-            borderRadius: "12px",
-            padding: "16px",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            border: "1px solid #e5e7eb",
-          }}
-        >
-          <h3 style={{ margin: 0, marginBottom: "8px", color: "#111827" }}>
-            {title}
-          </h3>
-          <p style={{ margin: 0, color: "#6b7280", fontSize: "14px" }}>
-            {description}
-          </p>
+            transition: "all 0.2s ease"
+          }}>
+            {buttonText}
+          </button>
         </div>
-      );
-    };
+      </section>
+    );
+
+    // Feature Card Component
+    const FeatureCard = ({ icon = "⚡", title = "Instant Updates", description = "See changes as you speak" }) => (
+      <div style={{
+        padding: "24px",
+        backgroundColor: "white",
+        borderRadius: "12px",
+        border: "1px solid #e5e7eb",
+        textAlign: "center"
+      }}>
+        <div style={{ fontSize: "32px", marginBottom: "12px" }}>{icon}</div>
+        <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#111827", marginBottom: "8px" }}>{title}</h3>
+        <p style={{ fontSize: "14px", color: "#6b7280" }}>{description}</p>
+      </div>
+    );
+
+    // Features Section
+    const Features = ({ 
+      title = "Why VoicePilot?",
+      features = [
+        { icon: "🎤", title: "Voice Commands", description: "Speak naturally to edit code" },
+        { icon: "👁️", title: "Visual Selection", description: "Point at elements to target them" },
+        { icon: "⚡", title: "Instant Preview", description: "See changes in real-time" }
+      ]
+    }) => (
+      <section style={{ padding: "64px 0", backgroundColor: "white" }}>
+        <div className="container">
+          <h2 style={{
+            fontSize: "32px",
+            fontWeight: "700",
+            color: "#111827",
+            textAlign: "center",
+            marginBottom: "48px"
+          }}>
+            {title}
+          </h2>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "24px"
+          }}>
+            {features.map((f, i) => <FeatureCard key={i} {...f} />)}
+          </div>
+        </div>
+      </section>
+    );
+
+    // Pricing Card Component
+    const PricingCard = ({ title = "Pro", price = "$19", features = [], highlighted = false }) => (
+      <div style={{
+        padding: "32px",
+        backgroundColor: highlighted ? "#4f46e5" : "white",
+        color: highlighted ? "white" : "#111827",
+        borderRadius: "16px",
+        border: highlighted ? "none" : "1px solid #e5e7eb",
+        textAlign: "center",
+        flex: "1"
+      }}>
+        <h3 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "8px" }}>{title}</h3>
+        <div style={{ fontSize: "48px", fontWeight: "800", marginBottom: "24px" }}>{price}</div>
+        <ul style={{ listStyle: "none", padding: 0, marginBottom: "24px" }}>
+          {features.map((f, i) => (
+            <li key={i} style={{ padding: "8px 0", fontSize: "14px", color: highlighted ? "#e0e7ff" : "#6b7280" }}>
+              ✓ {f}
+            </li>
+          ))}
+        </ul>
+        <button style={{
+          width: "100%",
+          padding: "12px",
+          backgroundColor: highlighted ? "white" : "#4f46e5",
+          color: highlighted ? "#4f46e5" : "white",
+          fontWeight: "600",
+          borderRadius: "8px",
+          border: "none",
+          cursor: "pointer"
+        }}>
+          {highlighted ? "Current Plan" : "Choose Plan"}
+        </button>
+      </div>
+    );
+
+    // Pricing Section
+    const Pricing = ({ title = "Simple Pricing" }) => (
+      <section style={{ padding: "64px 0", backgroundColor: "#f9fafb" }}>
+        <div className="container">
+          <h2 style={{
+            fontSize: "32px",
+            fontWeight: "700",
+            color: "#111827",
+            textAlign: "center",
+            marginBottom: "48px"
+          }}>
+            {title}
+          </h2>
+          <div style={{ display: "flex", gap: "24px", maxWidth: "900px", margin: "0 auto" }}>
+            <PricingCard 
+              title="Starter"
+              price="$0"
+              features={["5 commands/day", "Basic support", "1 project"]}
+            />
+            <PricingCard 
+              title="Pro"
+              price="$19"
+              features={["Unlimited commands", "Priority support", "10 projects"]}
+              highlighted={true}
+            />
+            <PricingCard 
+              title="Team"
+              price="$49"
+              features={["Unlimited commands", "24/7 support", "Unlimited projects"]}
+            />
+          </div>
+        </div>
+      </section>
+    );
+
+    // Testimonial Component
+    const Testimonial = ({ quote = "VoicePilot changed how I code!", author = "Sarah Chen", role = "Frontend Developer" }) => (
+      <div style={{
+        padding: "32px",
+        backgroundColor: "white",
+        borderRadius: "12px",
+        border: "1px solid #e5e7eb"
+      }}>
+        <p style={{ fontSize: "16px", color: "#374151", marginBottom: "16px", fontStyle: "italic" }}>
+          "{quote}"
+        </p>
+        <div>
+          <p style={{ fontWeight: "600", color: "#111827" }}>{author}</p>
+          <p style={{ fontSize: "14px", color: "#6b7280" }}>{role}</p>
+        </div>
+      </div>
+    );
+
+    // Testimonials Section
+    const Testimonials = ({ title = "Loved by Developers" }) => (
+      <section style={{ padding: "64px 0", backgroundColor: "white" }}>
+        <div className="container">
+          <h2 style={{
+            fontSize: "32px",
+            fontWeight: "700",
+            color: "#111827",
+            textAlign: "center",
+            marginBottom: "48px"
+          }}>
+            {title}
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
+            <Testimonial 
+              quote="Game changer for accessibility coding"
+              author="Sarah Chen"
+              role="Frontend Developer"
+            />
+            <Testimonial 
+              quote="My productivity doubled in a week"
+              author="Marcus Johnson"
+              role="Full Stack Engineer"
+            />
+            <Testimonial 
+              quote="The future of code editing is here"
+              author="Priya Patel"
+              role="UX Engineer"
+            />
+          </div>
+        </div>
+      </section>
+    );
+
+    // Footer Component
+    const Footer = ({ company = "VoicePilot Inc." }) => (
+      <footer style={{
+        padding: "32px 0",
+        backgroundColor: "#111827",
+        color: "white"
+      }}>
+        <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontWeight: "600" }}>{company}</span>
+          <div style={{ display: "flex", gap: "24px" }}>
+            <span style={{ color: "#9ca3af", cursor: "pointer" }}>Privacy</span>
+            <span style={{ color: "#9ca3af", cursor: "pointer" }}>Terms</span>
+            <span style={{ color: "#9ca3af", cursor: "pointer" }}>Contact</span>
+          </div>
+        </div>
+      </footer>
+    );
 
     // Main App
     const App = () => {
       return (
-        <div
-          style={{
-            minHeight: "100vh",
-            backgroundColor: "#f9fafb",
-            padding: "40px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "24px",
-          }}
-        >
-          <h1 style={{ color: "#111827", marginBottom: "8px" }}>
-            Welcome to VoicePilot
-          </h1>
-          <p style={{ color: "#6b7280", marginBottom: "24px" }}>
-            Highlight any area and speak to edit code
-          </p>
-          
-          <Button onClick={() => console.log('Clicked!')}>
-            Get Started
-          </Button>
-          
-          <div style={{ marginTop: "32px", width: "100%", maxWidth: "600px" }}>
-            <Card
-              title="Smart Editing"
-              description="Use your voice to make changes to any component"
-            />
-            <div style={{ height: "16px" }} />
-            <Card
-              title="Visual Selection"
-              description="Highlight areas on screen to target specific elements"
-            />
-            <div style={{ height: "16px" }} />
-            <Card
-              title="Instant Preview"
-              description="See your changes applied in real-time"
-            />
-          </div>
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+          <Navbar />
+          <Hero />
+          <Features />
+          <Pricing />
+          <Testimonials />
+          <Footer />
         </div>
       );
     };
