@@ -9,7 +9,6 @@ import sys
 import json
 import os
 import time
-import hashlib
 from typing import Optional, Dict, List, Tuple
 from functools import wraps
 
@@ -234,53 +233,6 @@ def get_cached_response(key: str) -> Optional[dict]:
 def set_cached_response(key: str, response: dict) -> None:
     """Cache a response."""
     DEMO_CACHE[key] = (time.time(), response)
-
-
-# Demo command responses - hardcoded for reliable demo
-DEMO_RESPONSES = {
-    "button-blue": {
-        "targetFile": "Button.tsx",
-        "codeChange": """<button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors" style={{backgroundColor: '#3b82f6'}}>
-  Click Me
-</button>""",
-        "description": "Change button background color to blue (#3b82f6)",
-        "confidence": 0.95,
-        "element": "PrimaryButton",
-        "intent": "change_color"
-    },
-    "card-padding": {
-        "targetFile": "Card.tsx",
-        "codeChange": """<div className="bg-white rounded-xl shadow-lg p-8" style={{padding: '32px'}}>
-  Content here
-</div>""",
-        "description": "Increase card padding from 16px to 32px",
-        "confidence": 0.92,
-        "element": "FeatureCard",
-        "intent": "change_spacing"
-    },
-    "text-bigger": {
-        "targetFile": "Heading.tsx",
-        "codeChange": """<h1 className="text-4xl font-bold text-gray-900 mb-4" style={{fontSize: '2.5rem'}}>
-  Welcome to VoicePilot
-</h1>""",
-        "description": "Increase heading font size from 2rem to 2.5rem",
-        "confidence": 0.89,
-        "element": "HeroTitle",
-        "intent": "change_font_size"
-    },
-    "grid-layout": {
-        "targetFile": "Grid.tsx",
-        "codeChange": """<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-  <Card />
-  <Card />
-  <Card />
-</div>""",
-        "description": "Change card layout from flex column to 3-column grid",
-        "confidence": 0.87,
-        "element": "CardContainer",
-        "intent": "change_layout"
-    }
-}
 
 
 # Pydantic models for request validation

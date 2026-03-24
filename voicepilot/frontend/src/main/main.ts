@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, desktopCapturer } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import { logger } from '../renderer/utils/logger';
 
 let mainWindow: BrowserWindow | null = null;
 let previewWindow: BrowserWindow | null = null;
@@ -259,7 +260,7 @@ ipcMain.handle('analyze-command', async (event, data: {
   // Validate command input
   const commandValidation = validateCommand(data.command);
   if (!commandValidation.isValid) {
-    console.error('Command validation failed:', commandValidation.error);
+    logger.error('Command validation failed:', commandValidation.error);
     return { success: false, error: commandValidation.error };
   }
 
@@ -269,7 +270,7 @@ ipcMain.handle('analyze-command', async (event, data: {
   try {
     const isBackendHealthy = await healthCheck();
     if (isBackendHealthy) {
-      console.log('Using backend API for analyze-command');
+      logger.log('Using backend API for analyze-command');
       
       // Map command to demo type for backend
       let demoType: string | null = null;
@@ -314,11 +315,11 @@ ipcMain.handle('analyze-command', async (event, data: {
       };
     }
   } catch (err) {
-    console.warn('Backend API failed, falling back to mock:', err);
+    logger.warn('Backend API failed, falling back to mock:', err);
   }
   
   // Fallback to mock implementation
-  console.log('Using mock implementation for analyze-command');
+  logger.log('Using mock implementation for analyze-command');
   
   // Demo command 1: "Make this button blue"
   if (cmd.includes('button') && cmd.includes('blue')) {
@@ -404,14 +405,14 @@ ipcMain.handle('apply-change', async (event, data: {
   // Validate file path
   const pathValidation = validateFilePath(data.targetFile);
   if (!pathValidation.isValid) {
-    console.error('File path validation failed:', pathValidation.error);
+    logger.error('File path validation failed:', pathValidation.error);
     return { success: false, error: pathValidation.error };
   }
 
   // Validate code change
   const codeValidation = validateCodeChange(data.codeChange);
   if (!codeValidation.isValid) {
-    console.error('Code change validation failed:', codeValidation.error);
+    logger.error('Code change validation failed:', codeValidation.error);
     return { success: false, error: codeValidation.error };
   }
 
@@ -421,7 +422,7 @@ ipcMain.handle('apply-change', async (event, data: {
   try {
     const isBackendHealthy = await healthCheck();
     if (isBackendHealthy) {
-      console.log('Using backend API for apply-change');
+      logger.log('Using backend API for apply-change');
       const result = await callBackendAPI('/api/analyze/apply', {
         filePath: sanitizedFileName,
         codeChange: data.codeChange.after,
@@ -429,11 +430,11 @@ ipcMain.handle('apply-change', async (event, data: {
       return result;
     }
   } catch (err) {
-    console.warn('Backend API failed, falling back to local file system:', err);
+    logger.warn('Backend API failed, falling back to local file system:', err);
   }
   
   // Fallback to local file system
-  console.log('Using local file system for apply-change');
+  logger.log('Using local file system for apply-change');
   try {
     const filePath = path.join(DEMO_PROJECT_PATH, sanitizedFileName);
     
@@ -459,7 +460,7 @@ ipcMain.handle('apply-change', async (event, data: {
       return { success: false, error: 'Could not find the code to replace' };
     }
   } catch (error) {
-    console.error('Error applying change:', error);
+    logger.error('Error applying change:', error);
     return { success: false, error: (error as Error).message };
   }
 });
